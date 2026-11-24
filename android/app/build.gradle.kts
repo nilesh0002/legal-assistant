@@ -15,8 +15,8 @@ android {
         versionCode = 1
         versionName = "0.1.0"
 
-        // Backend URL — 10.0.2.2 maps to host localhost from the Android emulator
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000\"")
+        // Live production cloud backend
+        buildConfigField("String", "BASE_URL", "\"https://legal-assistant-1qgm.onrender.com\"")
     }
 
     buildFeatures {
