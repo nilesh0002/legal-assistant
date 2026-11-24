@@ -216,6 +216,42 @@ class LegalResponseValidator(BaseValidator):
                     f"Support check failed: Section {sec} is mentioned in answer but absent from retrieved text/metadata."
                 )
 
+        # Check: Case names mentioned in text must appear in retrieved text/metadata or sources.yaml
+        case_matches = re.finditer(r"\b([A-Z][a-zA-Z\.\s]{2,30}?)\s+v(?:s|\.)?\s+([A-Z][a-zA-Z\.\s]{2,30}?)\b", all_output_text)
+        for cm in case_matches:
+            c_name = cm.group(0).strip()
+            c_lower = c_name.lower()
+            context_lower = all_context_combined.lower()
+            if c_lower not in context_lower and cm.group(1).strip().lower() not in context_lower:
+                errors.append(
+                    f"Support check failed: Case '{c_name}' is mentioned in answer but absent from retrieved context."
+                )
+
+        # Check: Years mentioned in answer
+        mentioned_years = set(re.findall(r"\b(19\d\d|20\d\d)\b", all_output_text))
+        # Known statute enactment years that may appear naturally
+        statute_years = {"1950", "2023", "1973", "1860", "1872", "1988", "2019", "2005", "2000"}
+        for yr in mentioned_years:
+            if yr not in statute_years and yr not in all_context_combined:
+                errors.append(
+                    f"Support check failed: Year {yr} is mentioned in answer but absent from retrieved context."
+                )
+
+        # Check: Specific time limits asserted in answer (e.g. 24 hours, 15 days, 60 days, 90 days, 7 years)
+        time_limits = re.findall(r"\b(\d+)\s*(hours?|days?|weeks?|months?|years?)\b", all_output_text, re.IGNORECASE)
+        context_lower = all_context_combined.lower()
+        for num, unit in time_limits:
+            time_phrase = f"{num} {unit}".lower()
+            time_phrase_singular = f"{num} {unit.rstrip('s')}".lower()
+            if time_phrase not in context_lower and time_phrase_singular not in context_lower:
+                # Also check digit vs written number (e.g., twenty-four hours)
+                num_map = {"24": "twenty-four", "15": "fifteen", "60": "sixty", "90": "ninety", "7": "seven", "3": "three"}
+                word_phrase = f"{num_map.get(num, '')} {unit}".lower()
+                if not (word_phrase and word_phrase in context_lower):
+                    errors.append(
+                        f"Support check failed: Time limit '{num} {unit}' is mentioned in answer but absent from retrieved context."
+                    )
+
         # Check: Case names mentioned in related_judgments must be in sources.yaml
         for rj in response.related_judgments:
             if rj.source_id not in sources_to_check:

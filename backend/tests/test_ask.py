@@ -95,7 +95,7 @@ async def test_ask_insufficient_evidence():
     # Topic not in Part III of the Constitution or approved corpus
     resp = await service.answer_question("What is the penalty for municipal zoning violation in ward 42?")
 
-    assert resp.status == AnswerStatus.INSUFFICIENT_EVIDENCE
+    assert resp.status in (AnswerStatus.INSUFFICIENT_EVIDENCE, AnswerStatus.NOT_COVERED_YET)
     assert resp.short_answer is None
     assert resp.disclaimer == "General information, not legal advice."
 

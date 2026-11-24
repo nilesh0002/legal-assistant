@@ -14,6 +14,7 @@ if str(BASE_DIR) not in sys.path:
 
 from pipeline.parse_constitution import run_ingestion as parse_constitution
 from pipeline.parse_bnss import parse_bnss
+from pipeline.parse_bns import parse_bns
 PROCESSED_DIR = BASE_DIR / "data" / "processed"
 
 
@@ -21,14 +22,16 @@ def run_ingestion():
     """Run all document parsers and produce consolidated corpus."""
     const_chunks = parse_constitution()
     bnss_chunks = parse_bnss()
+    bns_chunks = parse_bns()
 
-    all_chunks = const_chunks + bnss_chunks
+    all_chunks = const_chunks + bnss_chunks + bns_chunks
     out_path = PROCESSED_DIR / "all_chunks.json"
     out_path.write_text(json.dumps(all_chunks, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"\n[Ingest Complete]")
     print(f"  Constitution Chunks: {len(const_chunks)}")
     print(f"  BNSS 2023 Chunks:    {len(bnss_chunks)}")
+    print(f"  BNS 2023 Chunks:     {len(bns_chunks)}")
     print(f"  Total Active Chunks: {len(all_chunks)} -> {out_path}")
     return all_chunks
 

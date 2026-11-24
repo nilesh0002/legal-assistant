@@ -58,6 +58,7 @@ async def test_out_of_scope_evidence_threshold(query: str):
     assert resp.status in (
         AnswerStatus.INSUFFICIENT_EVIDENCE,
         AnswerStatus.OUT_OF_SCOPE,
+        AnswerStatus.NOT_COVERED_YET,
     ), f"Out-of-scope query '{query}' should not be answered; got {resp.status}"
     assert resp.short_answer is None
     assert resp.details == []

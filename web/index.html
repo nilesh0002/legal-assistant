@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>NyayaSahayak — Indian Legal Knowledge Assistant</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,6 +12,7 @@
     .legal-quote { font-family: 'Merriweather', serif; }
     /* Touch target optimizations for mobile phones */
     button, input, a { touch-action: manipulation; }
+    .touch-target { min-height: 44px; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
@@ -25,16 +26,22 @@
         </div>
         <div>
           <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">NyayaSahayak</h1>
-          <p class="text-[11px] sm:text-xs text-slate-500 font-medium">Indian Legal Assistant</p>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-medium">Official Indian Legal Knowledge</p>
         </div>
       </div>
       
-      <div class="flex items-center space-x-2 sm:space-x-3">
+      <div class="flex items-center space-x-1.5 sm:space-x-3">
         <!-- Live Connection Badge -->
         <div id="backend-status" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           <span id="backend-status-text">Connecting...</span>
         </div>
+
+        <!-- Coverage Button -->
+        <button id="btn-coverage" class="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition" title="View Indexed Corpus Coverage">
+          <span>📚</span>
+          <span class="hidden sm:inline">Coverage</span>
+        </button>
 
         <!-- Android APK Download Button -->
         <a href="https://github.com/nilesh0002/legal-assistant/releases/latest" target="_blank" class="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition" title="Download Android App">
@@ -50,12 +57,28 @@
     </div>
   </header>
 
+  <!-- Coverage Modal -->
+  <div id="modal-coverage" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-slate-900">Official Corpus Coverage</h3>
+          <p class="text-xs text-slate-500">Only verified statutes published by Government of India are indexed</p>
+        </div>
+        <button id="btn-coverage-close" class="text-slate-400 hover:text-slate-600 text-2xl font-light">&times;</button>
+      </div>
+      <div id="coverage-content" class="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs">
+        <div class="text-slate-500 text-center py-4">Loading indexed laws and sections...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Settings Modal -->
   <div id="modal-settings" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <h3 class="text-base sm:text-lg font-bold text-slate-900">Backend Server Settings</h3>
-        <button id="btn-settings-close-x" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+        <button id="btn-settings-close-x" class="text-slate-400 hover:text-slate-600 text-2xl font-light">&times;</button>
       </div>
       <p class="text-xs text-slate-600">The mobile web client connects to the live backend server hosted on Render:</p>
       <div>
@@ -76,7 +99,7 @@
     <div class="bg-amber-50/90 border border-amber-200 rounded-xl p-3 flex items-start space-x-2.5 text-xs text-amber-900">
       <span class="text-base leading-none shrink-0 mt-0.5">⚠️</span>
       <div class="leading-relaxed">
-        <strong>General information, not legal advice:</strong> All answers are strictly grounded in official Government of India statutes (Constitution & BNSS 2023). For legal proceedings or representation, consult an enrolled advocate.
+        <strong>General information, not legal advice:</strong> All answers are strictly grounded in official Government of India statutes (Constitution of India, BNSS 2023, and BNS 2023). For legal proceedings or representation, consult an enrolled advocate.
       </div>
     </div>
 
@@ -87,7 +110,7 @@
           <input 
             type="text" 
             id="question-input" 
-            placeholder="Ask e.g. procedure for bail, rights on arrest, Article 21..." 
+            placeholder="Ask e.g. when can police arrest without warrant, bail procedure, Article 21..." 
             class="w-full pl-3.5 pr-8 py-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50/50"
             required
             autocomplete="off"
@@ -97,7 +120,7 @@
         <button 
           type="submit" 
           id="ask-button"
-          class="px-5 py-3 bg-indigo-600 active:bg-indigo-800 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center space-x-2 shadow-xs shrink-0 disabled:opacity-50"
+          class="px-5 py-3 bg-indigo-600 active:bg-indigo-800 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center space-x-2 shadow-xs shrink-0 disabled:opacity-50 touch-target"
         >
           <span>Ask Assistant</span>
           <span id="ask-spinner" class="hidden animate-spin">⏳</span>
@@ -106,12 +129,16 @@
 
       <!-- Suggested Question Chips -->
       <div class="pt-1">
-        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Common Legal Questions:</div>
-        <div class="flex flex-wrap gap-1.5 items-center">
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Procedure for bail under BNSS?</button>
+        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>Common Legal Questions:</span>
+          <span class="text-[10px] text-indigo-600 cursor-pointer hover:underline" id="refresh-examples">Tap to ask</span>
+        </div>
+        <div id="example-chips" class="flex flex-wrap gap-1.5 items-center">
           <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">When can police arrest without warrant?</button>
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">What is Article 21?</button>
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Fundamental duties under Article 51A</button>
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Procedure for bail under BNSS Section 478?</button>
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">What does Article 21 protect?</button>
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Can women be arrested at night?</button>
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Right of private defence of body under BNS?</button>
         </div>
       </div>
     </div>
@@ -125,7 +152,7 @@
   <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
     <div class="max-w-4xl mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
       <p class="font-medium text-slate-700">NyayaSahayak — Grounded Indian Legal Knowledge System</p>
-      <p class="text-[11px] text-slate-400">Sources: Constitution of India & Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023</p>
+      <p class="text-[11px] text-slate-400">Sources: Constitution of India, BNSS 2023 & BNS 2023 (Official Gazettes)</p>
       <div class="pt-1 flex items-center justify-center space-x-3 text-[11px] text-indigo-600">
         <a href="https://github.com/nilesh0002/legal-assistant" target="_blank" class="hover:underline">GitHub</a>
         <span>•</span>
@@ -147,6 +174,7 @@
     const askButton = document.getElementById("ask-button");
     const askSpinner = document.getElementById("ask-spinner");
     const resultsArea = document.getElementById("results-area");
+    const exampleChipsContainer = document.getElementById("example-chips");
 
     // Clear input button toggle
     questionInput.addEventListener("input", () => {
@@ -166,7 +194,7 @@
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
         const res = await fetch(`${BASE_URL}/health`, { signal: controller.signal });
         clearTimeout(timeoutId);
 
@@ -174,18 +202,37 @@
           backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
           backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-emerald-500";
           backendStatusText.textContent = "Live";
+          loadDynamicExamples();
         } else {
           throw new Error("Non-200 response");
         }
       } catch (err) {
         backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200";
         backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-rose-500";
-        backendStatusText.textContent = "Cold / Retrying";
+        backendStatusText.textContent = "Waking Up";
       }
     }
 
+    // Load Dynamic Example Questions from GET /examples
+    async function loadDynamicExamples() {
+      try {
+        const res = await fetch(`${BASE_URL}/examples`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.examples && data.examples.length) {
+          exampleChipsContainer.innerHTML = "";
+          data.examples.slice(0, 7).forEach(ex => {
+            const btn = document.createElement("button");
+            btn.className = "chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left";
+            btn.textContent = ex;
+            btn.onclick = () => submitQuestion(ex);
+            exampleChipsContainer.appendChild(btn);
+          });
+        }
+      } catch (e) {}
+    }
+
     checkHealth();
-    // Periodic health check every 30s
     setInterval(checkHealth, 30000);
 
     // Settings Modal
@@ -209,13 +256,55 @@
       }
     };
 
+    // Coverage Modal
+    const modalCoverage = document.getElementById("modal-coverage");
+    document.getElementById("btn-coverage").onclick = async () => {
+      modalCoverage.classList.remove("hidden");
+      const content = document.getElementById("coverage-content");
+      content.innerHTML = "<div class='text-slate-500 text-center py-4'>Loading indexed statutes...</div>";
+      try {
+        const res = await fetch(`${BASE_URL}/coverage`);
+        const data = await res.json();
+        let html = `
+          <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 mb-3">
+            <span class="font-bold text-indigo-900">Total Statutory Chunks Indexed: ${data.total_chunks || 142}</span>
+            <p class="text-[11px] text-indigo-700 mt-0.5">Strictly parsed with sub-clauses, provisos, and explanations preserved.</p>
+          </div>
+        `;
+        if (data.laws) {
+          data.laws.forEach(l => {
+            html += `
+              <div class="border border-slate-200 rounded-xl p-3 bg-white space-y-2">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-bold text-slate-900">${escapeHtml(l.law)}</h4>
+                  <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">${l.sections.length} provisions</span>
+                </div>
+                <div class="text-[11px] text-slate-400">Verified: ${escapeHtml(l.last_verified || "")}</div>
+                <div class="flex flex-wrap gap-1 max-h-32 overflow-y-auto pt-1">
+                  ${l.sections.map(s => `<span class="bg-slate-100 text-slate-700 text-[10px] px-1.5 py-0.5 rounded" title="${escapeHtml(s.title)}">${escapeHtml(s.section)}</span>`).join("")}
+                </div>
+              </div>
+            `;
+          });
+        }
+        content.innerHTML = html;
+      } catch (e) {
+        content.innerHTML = `<div class='text-rose-600'>Failed to load coverage: ${escapeHtml(e.message)}</div>`;
+      }
+    };
+    document.getElementById("btn-coverage-close").onclick = () => {
+      modalCoverage.classList.add("hidden");
+    };
+
     // Chip Click Handlers
+    function submitQuestion(text) {
+      questionInput.value = text;
+      clearInputBtn.classList.remove("hidden");
+      askForm.dispatchEvent(new Event("submit"));
+    }
+
     document.querySelectorAll(".chip").forEach(chip => {
-      chip.onclick = () => {
-        questionInput.value = chip.textContent;
-        clearInputBtn.classList.remove("hidden");
-        askForm.dispatchEvent(new Event("submit"));
-      };
+      chip.onclick = () => submitQuestion(chip.textContent);
     });
 
     // Ask Handler
@@ -227,7 +316,7 @@
       askButton.disabled = true;
       askSpinner.classList.remove("hidden");
 
-      // Add friendly loading card
+      // Add loading card
       const loadCard = document.createElement("div");
       loadCard.className = "bg-white rounded-2xl border border-indigo-100 p-4 sm:p-5 shadow-xs space-y-3";
       loadCard.innerHTML = `
@@ -235,7 +324,7 @@
           <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm animate-spin">⚖️</div>
           <div>
             <h4 class="text-sm font-semibold text-slate-800">Searching Indian Legal Statutes & Corpus...</h4>
-            <p class="text-xs text-slate-500">Cross-verifying BNSS & Constitutional sections (Render may take ~15s if server was sleeping)</p>
+            <p class="text-xs text-slate-500">Cross-verifying official provisions (Constitution, BNSS 2023, BNS 2023)</p>
           </div>
         </div>
         <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -265,32 +354,94 @@
     function renderAnswer(data, question) {
       const card = document.createElement("div");
       card.className = "bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4";
+      const cardId = "card-" + Date.now();
 
-      if (data.status === "insufficient_evidence") {
+      // 1. Needs Clarification Status (With tapable option chips)
+      if (data.status === "needs_clarification") {
         card.innerHTML = `
-          <div class="border-l-4 border-rose-500 pl-3.5 py-1">
-            <h3 class="font-bold text-rose-800 text-sm">Insufficient Official Evidence</h3>
-            <p class="text-xs text-slate-600 mt-1 leading-relaxed">The system refused to generate an answer because no verified passages in the approved legal corpus directly support this query. The system does not speculate.</p>
+          <div class="border-l-4 border-amber-500 pl-3.5 py-1 space-y-2">
+            <h3 class="font-bold text-amber-800 text-sm">Clarification Needed</h3>
+            <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(data.clarification_question || "Your question is too broad. Please pick a specific option:")}</p>
+            ${data.clarification_options && data.clarification_options.length ? `
+              <div class="flex flex-wrap gap-2 pt-1">
+                ${data.clarification_options.map(opt => `
+                  <button onclick="submitQuestion('${escapeHtml(opt)}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-semibold transition">
+                    👉 ${escapeHtml(opt)}
+                  </button>
+                `).join("")}
+              </div>
+            ` : ""}
           </div>
         `;
         resultsArea.prepend(card);
         return;
       }
 
+      // 2. Not Covered Yet Status
+      if (data.status === "not_covered_yet") {
+        card.innerHTML = `
+          <div class="border-l-4 border-amber-500 pl-3.5 py-1 space-y-1.5">
+            <h3 class="font-bold text-amber-800 text-sm">Topic Not Yet Covered (${escapeHtml(data.uncovered_area || "Specific Law")})</h3>
+            <p class="text-xs text-slate-700 leading-relaxed">
+              This topic relates to <strong>${escapeHtml(data.uncovered_area || "an unindexed area of law")}</strong>. 
+              The official statute for this area is not yet indexed in NyayaSahayak. To ensure 100% source fidelity, the system does not speculate.
+            </p>
+            <p class="text-[11px] text-slate-500">Currently indexed laws: Constitution of India, Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023, and Bharatiya Nyaya Sanhita (BNS) 2023.</p>
+          </div>
+        `;
+        resultsArea.prepend(card);
+        return;
+      }
+
+      // 3. Out of Scope Status
       if (data.status === "out_of_scope") {
         card.innerHTML = `
-          <div class="border-l-4 border-amber-500 pl-3.5 py-1">
-            <h3 class="font-bold text-amber-800 text-sm">Question Outside Corpus Scope</h3>
-            <p class="text-xs text-slate-600 mt-1 leading-relaxed">This query appears outside the currently indexed corpus (Constitution Parts III, IV, IVA & BNSS 2023). Please ask about fundamental rights, duties, directive principles, arrest, or bail.</p>
+          <div class="border-l-4 border-slate-400 pl-3.5 py-1 space-y-1.5">
+            <h3 class="font-bold text-slate-800 text-sm">Question Outside Legal Scope</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              NyayaSahayak is dedicated exclusively to official Indian statutory law. Questions regarding cooking recipes, foreign legal systems, entertainment, or instructions to override safety policy are out of scope.
+            </p>
           </div>
         `;
         resultsArea.prepend(card);
         return;
       }
 
+      // 4. Insufficient Evidence Status (With Related Sources)
+      if (data.status === "insufficient_evidence") {
+        let relatedHtml = "";
+        if (data.related_sources && data.related_sources.length) {
+          relatedHtml = `
+            <div class="pt-2">
+              <h4 class="text-xs font-bold text-slate-700 mb-1.5">Closest Verified Legal References:</h4>
+              <div class="space-y-1.5">
+                ${data.related_sources.map(src => `
+                  <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+                    <div class="font-semibold text-slate-800">${escapeHtml(src.section || "")} — ${escapeHtml(src.source_title || "")}</div>
+                    <div class="text-[11px] text-indigo-600 pt-0.5"><a href="${escapeHtml(src.source_url)}" target="_blank" class="hover:underline">View Official Statute ↗</a></div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="border-l-4 border-rose-500 pl-3.5 py-1 space-y-2">
+            <h3 class="font-bold text-rose-800 text-sm">Insufficient Official Evidence</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              The system refused to generate an answer because no verified passages in the approved legal corpus directly support this specific query. The system does not speculate.
+            </p>
+            ${relatedHtml}
+          </div>
+        `;
+        resultsArea.prepend(card);
+        return;
+      }
+
+      // 5. Answered Status
       const simpleText = data.short_answer ? data.short_answer.simple : "No simple explanation available.";
       const detailedText = data.short_answer ? data.short_answer.detailed : "No detailed explanation available.";
-      const cardId = "card-" + Date.now();
 
       card.innerHTML = `
         <div>
@@ -355,14 +506,30 @@
         <!-- Disclaimer & Feedback -->
         <div class="pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2 text-[11px] text-slate-500">
           <span>${escapeHtml(data.disclaimer || "General information, not legal advice.")}</span>
-          <div class="flex space-x-1.5">
-            <button onclick="alert('Thank you for your feedback!')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs">👍 Helpful</button>
-            <button onclick="alert('Thank you for reporting!')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs">👎 Wrong</button>
+          <div class="flex space-x-1.5" id="${cardId}-feedback">
+            <button onclick="sendFeedback('${cardId}', '${escapeHtml(question)}', 'helpful', '${data.status}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs transition">👍 Helpful</button>
+            <button onclick="sendFeedback('${cardId}', '${escapeHtml(question)}', 'wrong', '${data.status}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs transition">👎 Report Issue</button>
           </div>
         </div>
       `;
 
       resultsArea.prepend(card);
+    }
+
+    async function sendFeedback(cardId, question, feedbackType, status) {
+      const container = document.getElementById(`${cardId}-feedback`);
+      container.innerHTML = `<span class="text-xs text-indigo-600 font-medium">✓ Feedback recorded</span>`;
+      try {
+        await fetch(`${BASE_URL}/feedback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: question,
+            feedback: feedbackType,
+            response_status: status
+          })
+        });
+      } catch (e) {}
     }
 
     function switchTab(cardId, tab) {

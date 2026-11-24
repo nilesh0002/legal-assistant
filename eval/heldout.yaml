@@ -79,6 +79,56 @@ in_scope:
     expected_status: answered
     expected_source: bnss-2023
 
+  - id: heldout-in-16
+    question: "What is the punishment for murder under Section 103 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-17
+    question: "When does the right of private defence of the body extend to causing death under Section 37 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-18
+    question: "Is an act done by a child under seven years an offence under Section 20 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-19
+    question: "What is the punishment for causing death by rash or negligent act under Section 106?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-20
+    question: "What constitutes the offence of sexual harassment under Section 75 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-21
+    question: "What is the definition of dowry death under Section 80 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-22
+    question: "What are the essential ingredients of theft under Section 303 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-23
+    question: "What is the punishment for cheating under Section 318 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-24
+    question: "What constitutes criminal intimidation under Section 351 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
+  - id: heldout-in-25
+    question: "What is the punishment for defamation under Section 356 of BNS?"
+    expected_status: answered
+    expected_source: bns-2023
+
 out_of_scope:
   - id: heldout-out-01
     question: "How do I calculate capital gains tax on sale of mutual fund units?"

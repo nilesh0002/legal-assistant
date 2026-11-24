@@ -16,6 +16,8 @@ class AnswerStatus(str, Enum):
     """Every response carries exactly one of these statuses."""
     ANSWERED = "answered"
     INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+    NOT_COVERED_YET = "not_covered_yet"
+    NEEDS_CLARIFICATION = "needs_clarification"
     OUT_OF_SCOPE = "out_of_scope"
     ERROR = "error"
 
@@ -70,6 +72,20 @@ class SearchRequest(BaseModel):
     min_score: float = Field(default=0.0, ge=0.0, le=1.0, description="Minimum similarity threshold")
 
 
+class FeedbackRequest(BaseModel):
+    """User feedback payload logged to review queue."""
+    question: str = Field(..., description="The query that was submitted")
+    feedback: str = Field(..., description="'helpful' or 'wrong'")
+    response_status: Optional[str] = Field(default=None, description="Status returned by system")
+    comment: Optional[str] = Field(default=None, description="User comment")
+    details: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Metadata or context")
+
+
+class FeedbackResponse(BaseModel):
+    status: str = "received"
+    message: str = "Feedback logged to review queue"
+
+
 class SearchResultItem(BaseModel):
     """A single retrieved legal document chunk."""
     chunk_id: str
@@ -104,6 +120,22 @@ class LegalResponse(BaseModel):
     short_answer: Optional[ShortAnswer] = None
     key_points: List[str] = Field(default_factory=list)
     details: List[SourceDetail] = Field(default_factory=list)
+    related_sources: List[SourceDetail] = Field(
+        default_factory=list,
+        description="Closest 2-3 sources returned for insufficient_evidence without presenting them as the answer"
+    )
+    uncovered_area: Optional[str] = Field(
+        None,
+        description="Name of the legal domain for not_covered_yet responses (e.g. 'Traffic Law')"
+    )
+    clarification_question: Optional[str] = Field(
+        None,
+        description="Single concise question when status is needs_clarification"
+    )
+    clarification_options: List[str] = Field(
+        default_factory=list,
+        description="2 to 3 tappable options when status is needs_clarification"
+    )
     related_judgments: List[RelatedJudgment] = Field(default_factory=list)
     last_verified: Optional[str] = Field(
         None, description="ISO date when sources were last checked"

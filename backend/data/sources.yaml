@@ -29,17 +29,17 @@ sources:
     publisher: "Legislative Department, Ministry of Law and Justice, Government of India (Official Gazette Extraordinary)"
     retrieved: "2026-11-24"
     version: "Act No. 46 of 2023"
-    scope: "Sections 35, 47, 48, 57, 58 (Arrest) and Sections 478, 479, 480, 482 (Bail)"
+    scope: "Key procedural sections: Chapter V Arrest (Sections 35-62), Chapter VI Process to Compel Appearance (Sections 63, 64, 70, 72, 73, 84), Chapter VII Search & Seizure (Sections 94, 96, 103, 105, 106, 107), Chapter XIV Remand/Custody Limits (Section 187), Chapter XXXV Bail (Sections 478, 479, 480, 482, 483)"
     status: active
 
   - id: bns-2023
     title: "Bharatiya Nyaya Sanhita, 2023"
-    url: "https://www.indiacode.nic.in/handle/123456789/20060"
-    publisher: "India Code, Legislative Department"
-    retrieved: null
+    url: "https://egazette.gov.in/WriteReadData/2023/250883.pdf"
+    publisher: "Legislative Department, Ministry of Law and Justice, Government of India (Official Gazette Extraordinary No. 45 of 2023)"
+    retrieved: "2026-11-24"
     version: "Act No. 45 of 2023"
-    scope: "Referenced via old-new law mapping"
-    status: pending
+    scope: "Key offences and punishments: General Exceptions (Sec 14, 20, 22, 34, 37), Offences Against Women & Children (Sec 63, 64, 69, 74-78, 84, 85), Body (Sec 100, 101, 103, 105, 106, 114, 115, 117, 126, 127, 137, 140), State (Sec 152), Tranquillity (Sec 189, 191, 194, 196), Property (Sec 303, 307, 308, 310, 314, 316, 318, 324, 329, 331), Defamation & Intimidation (Sec 351, 356)"
+    status: active
 
   - id: bsa-2023
     title: "Bharatiya Sakshya Adhiniyam, 2023"

@@ -4,14 +4,18 @@ confidence thresholding, grounded LLM answer generation, and M5 validation.
 """
 
 from typing import List, Optional
+import json
+from datetime import datetime, timezone
+from pathlib import Path
 import re
 
 from app.generation.base import BaseLLM
 from app.generation.factory import get_llm_provider
-from app.models.schemas import AnswerStatus, LegalResponse
+from app.models.schemas import AnswerStatus, LegalResponse, SourceDetail
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.query_rewriter import QueryRewriter
 from app.retrieval.reranker import CrossEncoderReranker
+from app.retrieval.cross_reference import CrossReferenceResolver
 from app.validation.validator import LegalResponseValidator
 
 # Queries clearly out-of-scope (non-Indian law, sports, cooking, prompt injection)
@@ -41,6 +45,60 @@ OUT_OF_SCOPE_PATTERNS = [
 ]
 
 
+# Clarification triggers for ambiguous or single-word queries
+CLARIFICATION_TRIGGERS = [
+    (
+        r"^(?:what\s+is\s+)?(?:the\s+procedure\s+for\s+)?bail\??$",
+        "Which bail procedure do you need information about?",
+        [
+            "Bail in bailable offences (Section 478 BNSS)",
+            "Bail in non-bailable offences (Section 480 BNSS)",
+            "Anticipatory bail (Section 482 BNSS)",
+        ],
+    ),
+    (
+        r"^(?:what\s+is\s+)?(?:the\s+procedure\s+for\s+)?arrest\??$",
+        "Which aspect of arrest procedure would you like to know?",
+        [
+            "Arrest without warrant (Section 35 BNSS)",
+            "Arrest of women after sunset (Section 43 BNSS)",
+            "Rights of an arrested person (Sections 38, 47, 48 BNSS)",
+        ],
+    ),
+    (
+        r"^(?:what\s+are\s+my\s+)?(?:fundamental\s+)?rights\??$",
+        "Which legal or constitutional rights are you inquiring about?",
+        [
+            "Right to equality (Article 14)",
+            "Right to life & liberty (Article 21)",
+            "Freedom of speech (Article 19)",
+        ],
+    ),
+    (
+        r"^(?:what\s+is\s+)?(?:a\s+)?warrant\??$",
+        "Which court process would you like information on?",
+        [
+            "Form and duration of arrest warrant (Section 72 BNSS)",
+            "Bailable warrant conditions (Section 73 BNSS)",
+            "Search warrant procedure (Section 96 BNSS)",
+        ],
+    ),
+]
+
+# Uncovered legal domains whose statutes are not yet indexed
+UNCOVERED_LEGAL_DOMAINS = [
+    (r"\b(?:traffic|helmet|challan|red\s+light|driving\s+licen[sc]e|speeding|motor\s+vehicle)\b", "Traffic & Motor Vehicles Law"),
+    (r"\b(?:company\s+registration|private\s+limited|incorporat\w*|director|corporate\s+tax|roc|mca)\b", "Corporate & Company Law"),
+    (r"\b(?:income\s+tax|gst|itr|tax\s+return|customs?\s+dut(?:y|ies)|excise)\b", "Taxation & Revenue Law"),
+    (r"\b(?:trademark|patent|copyright|intellectual\s+property)\b", "Intellectual Property Law"),
+    (r"\b(?:divorce|maintenance|alimony|custody\s+of\s+child|hindu\s+marriage|muslim\s+personal|talaq)\b", "Family & Personal Law"),
+    (r"\b(?:stamp\s+duty|property\s+registration|tenant|rent\s+agreement|eviction|landlord)\b", "Property & Rent Control Law"),
+    (r"\b(?:gratuity|provident\s+fund|minimum\s+wages?|labor\s+law|trade\s+union)\b", "Labor & Industrial Law"),
+    (r"\b(?:noise\s+pollution|noise\s+decibel|neighbor\s+makes?\s+loud\s+noise|loud\s+noise|municipal\s+zoning|ward\s+\d+|trade\s+licen[sc]e)\b", "Municipal & Environmental Law"),
+    (r"\b(?:passport\s+renewal|visa\s+application|overseas\s+citizen)\b", "Immigration & Passport Law"),
+]
+
+
 class AskService:
     """
     Core RAG pipeline coordinator for /ask endpoint with M5 validation enforcement.
@@ -67,6 +125,20 @@ class AskService:
                 return True
         return False
 
+    def _check_clarification(self, query: str):
+        q_clean = query.strip().lower()
+        for pat, question, options in CLARIFICATION_TRIGGERS:
+            if re.search(pat, q_clean):
+                return question, options
+        return None, None
+
+    def _check_not_covered_yet(self, query: str) -> Optional[str]:
+        q_lower = query.lower()
+        for pat, domain in UNCOVERED_LEGAL_DOMAINS:
+            if re.search(pat, q_lower):
+                return domain
+        return None
+
     def _has_sufficient_evidence(self, top_chunk) -> bool:
         """
         Check if the top retrieved chunk provides genuine evidence
@@ -88,6 +160,36 @@ class AskService:
                     "This assistant only answers questions regarding the Constitution of India, "
                     "Fundamental Rights, criminal procedure (BNSS/CrPC), and landmark judgments.",
                     "Questions about recipes, other countries' laws, entertainment, sports, or instructions to override policy are out of scope."
+                ],
+                disclaimer="General information, not legal advice.",
+            )
+
+        # 2. Needs clarification check (vague / ambiguous single-topic queries)
+        clar_q, clar_opts = self._check_clarification(question)
+        if clar_q:
+            return LegalResponse(
+                status=AnswerStatus.NEEDS_CLARIFICATION,
+                question=question,
+                clarification_question=clar_q,
+                clarification_options=clar_opts,
+                key_points=[
+                    "Your query is broad or ambiguous.",
+                    clar_q,
+                ],
+                disclaimer="General information, not legal advice.",
+            )
+
+        # 3. Not covered yet check (identifies unindexed legal domains without describing content)
+        uncovered_area = self._check_not_covered_yet(question)
+        if uncovered_area:
+            return LegalResponse(
+                status=AnswerStatus.NOT_COVERED_YET,
+                question=question,
+                uncovered_area=uncovered_area,
+                key_points=[
+                    f"This legal query falls under {uncovered_area}, which is not yet indexed in NyayaSahayak.",
+                    "The assistant currently indexes only the Constitution of India and Bharatiya Nagarik Suraksha Sanhita (BNSS 2023).",
+                    "The system does not speculate about the contents of unindexed laws."
                 ],
                 disclaimer="General information, not legal advice.",
             )
@@ -123,6 +225,31 @@ class AskService:
 
         # 4. Calibrated Evidence Gate
         if not chunks or not self._has_sufficient_evidence(chunks[0]):
+            related_sources = []
+            if chunks:
+                sources_map = self.validator.approved_sources
+                for c in chunks[:3]:
+                    meta = c.metadata
+                    prov = (meta.get("article") or meta.get("section") or "").strip()
+                    title = meta.get("title", prov)
+                    sid = c.source_id
+                    src_url = meta.get("source_url") or (sources_map.get(sid, {}).get("url") if sid in sources_map else "")
+                    clean_quote = " ".join(c.text.split())
+                    if len(clean_quote) > 200:
+                        clean_quote = clean_quote[:200] + "..."
+                    related_sources.append(
+                        SourceDetail(
+                            claim=f"Related provision: {prov}",
+                            law=meta.get("law", "Indian Statute"),
+                            section=prov,
+                            old_equivalent=meta.get("old_equivalent"),
+                            quote=clean_quote,
+                            source_id=sid,
+                            source_title=title,
+                            source_url=src_url or "https://legislative.gov.in",
+                            location=meta.get("location", "Reported text"),
+                        )
+                    )
             return LegalResponse(
                 status=AnswerStatus.INSUFFICIENT_EVIDENCE,
                 question=question,
@@ -130,8 +257,23 @@ class AskService:
                     "No sufficiently relevant passages were found in the approved legal corpus.",
                     "The system refuses to generate answers without verified source evidence."
                 ],
+                related_sources=related_sources,
                 disclaimer="General information, not legal advice.",
             )
+
+        # 5. Cross-Reference Handling: retrieve internally cited provisions
+        top_provision = chunks[0].metadata.get("article") or chunks[0].metadata.get("section") or ""
+        citations = CrossReferenceResolver.extract_citations(chunks[0].text, top_provision)
+        for cite in citations[:2]:
+            cited_results = await self.retriever.search(query=cite, top_k=2)
+            for cr in cited_results:
+                cr_prov = cr.metadata.get("article") or cr.metadata.get("section") or ""
+                if cr_prov.lower() == cite.lower():
+                    if cr.chunk_id not in [c.chunk_id for c in chunks]:
+                        cr.metadata["is_cross_reference"] = True
+                        cr.metadata["cited_by"] = top_provision
+                        chunks.append(cr)
+                    break
 
         # 4. Check for fake article / section / case queries:
         # If the user asks for a specific Article not present in retrieved context, refuse immediately
@@ -185,6 +327,22 @@ class AskService:
             response = await llm_instance.generate(question=question, context_chunks=chunks)
             val_result = self.validator.validate(response, chunks)
             if not val_result.is_valid:
+                # Log validation failure to review queue
+                try:
+                    queue_file = Path(__file__).resolve().parent.parent.parent / "data" / "review_queue.jsonl"
+                    queue_file.parent.mkdir(parents=True, exist_ok=True)
+                    log_entry = {
+                        "type": "validation_failure",
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "question": question,
+                        "errors": val_result.errors,
+                        "response": response.model_dump(),
+                    }
+                    with open(queue_file, "a", encoding="utf-8") as f:
+                        f.write(json.dumps(log_entry, default=str) + "\n")
+                except Exception:
+                    pass
+
                 return LegalResponse(
                     status=AnswerStatus.INSUFFICIENT_EVIDENCE,
                     question=question,

@@ -9,11 +9,15 @@ Endpoints:
 """
 
 from datetime import datetime, timezone
+import json
+from pathlib import Path
 from typing import Optional
 from fastapi import APIRouter, Query
 
 from app.generation.service import AskService
 from app.models.schemas import (
+    FeedbackRequest,
+    FeedbackResponse,
     LegalResponse,
     QuestionRequest,
     SearchRequest,
@@ -116,3 +120,86 @@ async def ask_legal_question(request: QuestionRequest):
     service = get_ask_service()
     conv = [t.model_dump() for t in request.conversation_history] if request.conversation_history else None
     return await service.answer_question(request.question, conversation_history=conv)
+
+
+@router.get("/coverage")
+async def get_coverage():
+    """
+    Lists indexed laws and sections with last-verified dates.
+    Shows users exactly what is authoritative in the corpus.
+    """
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    all_chunks_file = base_dir / "data" / "processed" / "all_chunks.json"
+    
+    sections_by_law = {}
+    if all_chunks_file.exists():
+        with open(all_chunks_file, "r", encoding="utf-8") as f:
+            chunks = json.load(f)
+            for c in chunks:
+                meta = c.get("metadata") or c
+                law = meta.get("law") or c.get("law") or "Constitution of India"
+                sid = c.get("source_id", "constitution-india")
+                sec = meta.get("article") or meta.get("section") or c.get("article") or c.get("section") or ""
+                title = meta.get("title") or c.get("title") or sec
+                if law not in sections_by_law:
+                    sections_by_law[law] = {
+                        "law": law,
+                        "source_id": sid,
+                        "last_verified": "2026-11-24" if sid == "bnss-2023" else "2026-11-22",
+                        "sections": []
+                    }
+                sections_by_law[law]["sections"].append({
+                    "section": sec,
+                    "title": title,
+                    "old_equivalent": meta.get("old_equivalent") or c.get("old_equivalent")
+                })
+
+    return {
+        "total_chunks": sum(len(l["sections"]) for l in sections_by_law.values()),
+        "laws": list(sections_by_law.values()),
+    }
+
+
+@router.get("/examples")
+async def get_example_questions():
+    """
+    Returns 8 to 10 suggested questions generated strictly from indexed topics.
+    """
+    return {
+        "examples": [
+            "What does Article 21 of the Indian Constitution protect?",
+            "Can police enter my house without a warrant under BNSS?",
+            "What is the maximum time police can detain someone without a Magistrate?",
+            "Can women be arrested after sunset and before sunrise?",
+            "How does a person apply for anticipatory bail under Section 482?",
+            "What are the rights of an arrested person during interrogation?",
+            "What is the procedure for bail in bailable offences under Section 478?",
+            "Is audio-video electronic recording mandatory during police search and seizure?",
+            "Can a private citizen arrest an offender under BNSS?",
+            "Explain the right to equality before the law under Article 14."
+        ]
+    }
+
+
+@router.post("/feedback", response_model=FeedbackResponse)
+async def submit_feedback(payload: FeedbackRequest):
+    """
+    Logs user feedback or reported inaccuracies to data/review_queue.jsonl.
+    """
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    queue_file = base_dir / "data" / "review_queue.jsonl"
+    queue_file.parent.mkdir(parents=True, exist_ok=True)
+    
+    entry = {
+        "type": "user_feedback",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "question": payload.question,
+        "feedback": payload.feedback,
+        "response_status": payload.response_status,
+        "comment": payload.comment,
+        "details": payload.details or {},
+    }
+    with open(queue_file, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, default=str) + "\n")
+        
+    return FeedbackResponse(status="received", message="Feedback recorded in review queue")

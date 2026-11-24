@@ -7,9 +7,11 @@ using ONLY approved, verified sources.
 
 from contextlib import asynccontextmanager
 import json
+import time
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from fastapi.staticfiles import StaticFiles
 from app.api.routes import router
@@ -54,6 +56,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_ip_request_counts = {}
+RATE_LIMIT_WINDOW = 60
+MAX_REQUESTS_PER_WINDOW = 60
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    if request.url.path in ["/ask", "/search"]:
+        client_ip = request.client.host if request.client else "127.0.0.1"
+        now = time.time()
+        window_start = now - RATE_LIMIT_WINDOW
+        timestamps = _ip_request_counts.get(client_ip, [])
+        timestamps = [t for t in timestamps if t > window_start]
+        if len(timestamps) >= MAX_REQUESTS_PER_WINDOW:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests. Please wait a minute before querying again."}
+            )
+        timestamps.append(now)
+        _ip_request_counts[client_ip] = timestamps
+    return await call_next(request)
 
 app.include_router(router)
 
