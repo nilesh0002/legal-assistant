@@ -123,7 +123,7 @@ class LegalChatViewModel(
                 val errorResp = LegalResponse(
                     status = AnswerStatus.ERROR,
                     question = q,
-                    key_points = listOf("Unable to connect to legal knowledge service. ${e.localizedMessage ?: "Check network connection."}"),
+                    keyPoints = listOf("Unable to connect to legal knowledge service. ${e.localizedMessage ?: "Check network connection."}"),
                     disclaimer = "General information, not legal advice."
                 )
                 _uiState.value = _uiState.value.copy(
