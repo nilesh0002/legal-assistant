@@ -9,11 +9,15 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Singleton Retrofit client with dynamic base URL configuration.
- * Default is http://10.0.2.2:8000 for Android Emulator.
  */
 object RetrofitClient {
 
-    private var currentBaseUrl: String = BuildConfig.BASE_URL
+    private fun ensureTrailingSlash(url: String): String {
+        val trimmed = url.trim()
+        return if (trimmed.endsWith("/")) trimmed else "$trimmed/"
+    }
+
+    private var currentBaseUrl: String = ensureTrailingSlash(BuildConfig.BASE_URL)
 
     private val okHttpClient: OkHttpClient by lazy {
         val logging = HttpLoggingInterceptor().apply {
@@ -21,8 +25,11 @@ object RetrofitClient {
         }
         OkHttpClient.Builder()
             .addInterceptor(logging)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            // 60-second timeouts to allow Render.com free tier cold starts
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
             .build()
     }
 
@@ -37,7 +44,7 @@ object RetrofitClient {
         }
 
     fun updateBaseUrl(newUrl: String) {
-        val formatted = if (newUrl.endsWith("/")) newUrl else "$newUrl/"
+        val formatted = ensureTrailingSlash(newUrl)
         currentBaseUrl = formatted
         _apiService = createService(formatted)
     }
@@ -45,8 +52,9 @@ object RetrofitClient {
     fun getBaseUrl(): String = currentBaseUrl
 
     private fun createService(url: String): ApiService {
+        val safeUrl = ensureTrailingSlash(url)
         return Retrofit.Builder()
-            .baseUrl(url)
+            .baseUrl(safeUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

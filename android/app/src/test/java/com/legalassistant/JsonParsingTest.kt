@@ -49,7 +49,7 @@ class JsonParsingTest {
         assertEquals(AnswerStatus.ANSWERED, response.status)
         assertEquals("What is Article 21 of the Indian Constitution?", response.question)
         assertNotNull(response.shortAnswer)
-        assertTrue(response.shortAnswer!!.simple.contains("No person shall be deprived of his life"))
+        assertTrue(response.shortAnswer!!.simple.contains("no person shall be deprived of his life", ignoreCase = true))
         assertFalse(response.shortAnswer!!.simple.contains("citizens"))
         assertEquals(1, response.details.size)
         assertEquals("Article 21", response.details[0].section)

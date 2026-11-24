@@ -37,6 +37,8 @@ class LegalChatViewModel(
     private val historyRepository: LocalHistoryRepository? = null
 ) : ViewModel() {
 
+    private var currentApiService: ApiService = apiService
+
     private val _uiState = MutableStateFlow(LegalUiState())
     val uiState: StateFlow<LegalUiState> = _uiState.asStateFlow()
 
@@ -74,6 +76,7 @@ class LegalChatViewModel(
 
     fun updateBaseUrl(url: String) {
         RetrofitClient.updateBaseUrl(url)
+        currentApiService = RetrofitClient.apiService
         _uiState.value = _uiState.value.copy(baseUrl = url)
         checkHealth()
     }
@@ -81,8 +84,9 @@ class LegalChatViewModel(
     fun checkHealth() {
         viewModelScope.launch {
             try {
-                val resp = apiService.healthCheck()
-                _uiState.value = _uiState.value.copy(isBackendConnected = (resp.status == "ok"))
+                val resp = currentApiService.healthCheck()
+                val isConnected = resp.status.equals("healthy", ignoreCase = true) || resp.status.equals("ok", ignoreCase = true)
+                _uiState.value = _uiState.value.copy(isBackendConnected = isConnected)
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isBackendConnected = false)
             }
@@ -105,7 +109,7 @@ class LegalChatViewModel(
 
         viewModelScope.launch {
             try {
-                val response = apiService.askQuestion(QuestionRequest(question = q))
+                val response = currentApiService.askQuestion(QuestionRequest(question = q))
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     currentAnswer = response,

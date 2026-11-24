@@ -12,11 +12,11 @@ android {
         applicationId = "com.legalassistant"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
 
-        // Live production cloud backend
-        buildConfigField("String", "BASE_URL", "\"https://legal-assistant-1qgm.onrender.com\"")
+        // Live production cloud backend (with required trailing slash)
+        buildConfigField("String", "BASE_URL", "\"https://legal-assistant-1qgm.onrender.com/\"")
     }
 
     buildFeatures {

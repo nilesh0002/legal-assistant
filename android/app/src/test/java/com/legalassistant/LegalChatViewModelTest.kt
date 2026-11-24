@@ -20,7 +20,7 @@ class LegalChatViewModelTest {
 
     private val fakeApiService = object : ApiService {
         override suspend fun healthCheck(): HealthResponse {
-            return HealthResponse(status = "ok", service = "legal-assistant", timestamp = "2026-11-24T10:00:00Z")
+            return HealthResponse(status = "ok", service = "legal-assistant", version = "0.1.0", timestamp = "2026-11-24T10:00:00Z")
         }
 
         override suspend fun askQuestion(request: QuestionRequest): LegalResponse {
