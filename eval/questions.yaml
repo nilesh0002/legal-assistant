@@ -1,0 +1,20 @@
+# Golden Evaluation Set
+# =====================
+# 50+ test questions will be added in M8.
+# Format per entry shown below.
+
+questions:
+  - question: "What is Article 21 of the Indian Constitution?"
+    expected_status: answered
+    expected_sources: [constitution-india]
+    must_contain: ["life", "personal liberty"]
+
+  - question: "What are the guidelines from D.K. Basu case?"
+    expected_status: answered
+    expected_sources: [judgment-dk-basu]
+    must_contain: ["arrest", "custody"]
+
+  - question: "What is the recipe for butter chicken?"
+    expected_status: out_of_scope
+    expected_sources: []
+    must_not_contain: ["Article", "Section"]

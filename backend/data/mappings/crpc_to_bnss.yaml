@@ -1,0 +1,72 @@
+# Old Law -> New Law Mapping: CrPC -> BNSS
+# =========================================
+# Verified cross-reference table between Code of Criminal Procedure, 1973
+# and Bharatiya Nagarik Suraksha Sanhita, 2023.
+#
+# Status: "needs_human_review" (all entries marked per instruction)
+
+mappings:
+  - old_law: "Code of Criminal Procedure, 1973"
+    old_short: "CrPC"
+    new_law: "Bharatiya Nagarik Suraksha Sanhita, 2023"
+    new_short: "BNSS"
+    sections:
+      - old_section: "Section 41"
+        new_section: "Section 35"
+        topic: "When police may arrest without warrant"
+        status: needs_human_review
+        notes: "Prior approval of DSP required for offences punishable with less than 3 years where accused is infirm or above 60 years"
+
+      - old_section: "Section 41A"
+        new_section: "Section 35(3)"
+        topic: "Notice of appearance before arrest"
+        status: needs_human_review
+        notes: "Notice of appearance required where arrest is not made under sub-section (1)"
+
+      - old_section: "Section 50"
+        new_section: "Section 47"
+        topic: "Person arrested to be informed of grounds of arrest and of right to bail"
+        status: needs_human_review
+        notes: "Mandatory communication of full particulars of offence and right to bail"
+
+      - old_section: "Section 50A"
+        new_section: "Section 48"
+        topic: "Obligation to inform nominated person about arrest"
+        status: needs_human_review
+        notes: "Duty to inform relatives/nominated persons and designated police officer"
+
+      - old_section: "Section 56"
+        new_section: "Section 57"
+        topic: "Person arrested to be taken before Magistrate or officer in charge of police station"
+        status: needs_human_review
+        notes: "Mandatory production without unnecessary delay"
+
+      - old_section: "Section 57"
+        new_section: "Section 58"
+        topic: "Person arrested not to be detained more than twenty-four hours"
+        status: needs_human_review
+        notes: "Maximum 24-hour detention without Magistrate's special order under section 187"
+
+      - old_section: "Section 436"
+        new_section: "Section 478"
+        topic: "In what cases bail to be taken"
+        status: needs_human_review
+        notes: "Mandatory release on bail for bailable offences"
+
+      - old_section: "Section 436A"
+        new_section: "Section 479"
+        topic: "Maximum period for which undertrial prisoner can be detained"
+        status: needs_human_review
+        notes: "First-time offender release after one-third period of maximum imprisonment"
+
+      - old_section: "Section 437"
+        new_section: "Section 480"
+        topic: "When bail may be taken in case of non-bailable offence"
+        status: needs_human_review
+        notes: "Conditions and court discretion for non-bailable offences"
+
+      - old_section: "Section 438"
+        new_section: "Section 482"
+        topic: "Direction for grant of bail to person apprehending arrest (Anticipatory bail)"
+        status: needs_human_review
+        notes: "Application to High Court or Court of Session; exclusion for gang rape of minor under BNS 70(2)"

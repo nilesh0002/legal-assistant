@@ -1,0 +1,115 @@
+# Approved Source Registry
+# ========================
+# Every source the system is allowed to use must be listed here.
+# The validator rejects any answer citing a source_id not in this file.
+#
+# Fields:
+#   id:          Unique short identifier (used in source_id fields)
+#   title:       Human-readable title
+#   url:         Official URL where the document can be verified
+#   publisher:   Publishing authority
+#   retrieved:   Date when the content was downloaded (ISO format)
+#   version:     Version or "as amended" note
+#   scope:       What parts of this source are included in v1
+#   status:      "active" | "pending" | "retired"
+
+sources:
+  - id: constitution-india
+    title: "The Constitution of India"
+    url: "https://www.legislative.gov.in/static/uploads/2025/07/c9fe9c9b6840524844316f74bb1c556c.pdf"
+    publisher: "Legislative Department, Ministry of Law and Justice, Government of India"
+    retrieved: "2026-11-22"
+    version: "As on 1st May, 2026, incorporating amendments up to the Constitution (One Hundred and Sixth Amendment) Act, 2023"
+    scope: "Preamble, Part III (Articles 12-35), Part IV (Articles 36-51), Part IVA (Article 51A)"
+    status: active
+
+  - id: bnss-2023
+    title: "Bharatiya Nagarik Suraksha Sanhita, 2023"
+    url: "https://egazette.gov.in/WriteReadData/2023/250884.pdf"
+    publisher: "Legislative Department, Ministry of Law and Justice, Government of India (Official Gazette Extraordinary)"
+    retrieved: "2026-11-24"
+    version: "Act No. 46 of 2023"
+    scope: "Sections 35, 47, 48, 57, 58 (Arrest) and Sections 478, 479, 480, 482 (Bail)"
+    status: active
+
+  - id: bns-2023
+    title: "Bharatiya Nyaya Sanhita, 2023"
+    url: "https://www.indiacode.nic.in/handle/123456789/20060"
+    publisher: "India Code, Legislative Department"
+    retrieved: null
+    version: "Act No. 45 of 2023"
+    scope: "Referenced via old-new law mapping"
+    status: pending
+
+  - id: bsa-2023
+    title: "Bharatiya Sakshya Adhiniyam, 2023"
+    url: "https://www.indiacode.nic.in/handle/123456789/20061"
+    publisher: "India Code, Legislative Department"
+    retrieved: null
+    version: "Act No. 47 of 2023"
+    scope: "Referenced via old-new law mapping"
+    status: pending
+
+  # Landmark judgments
+  - id: judgment-kesavananda
+    title: "Kesavananda Bharati v. State of Kerala (1973)"
+    url: "https://main.sci.gov.in/"
+    publisher: "Supreme Court of India"
+    retrieved: null
+    version: "AIR 1973 SC 1461"
+    scope: "Basic Structure Doctrine"
+    status: pending
+
+  - id: judgment-maneka-gandhi
+    title: "Maneka Gandhi v. Union of India (1978)"
+    url: "https://main.sci.gov.in/"
+    publisher: "Supreme Court of India"
+    retrieved: null
+    version: "AIR 1978 SC 597"
+    scope: "Article 21 — right to life and personal liberty"
+    status: pending
+
+  - id: judgment-dk-basu
+    title: "D.K. Basu v. State of West Bengal (1997)"
+    url: "https://main.sci.gov.in/"
+    publisher: "Supreme Court of India"
+    retrieved: null
+    version: "AIR 1997 SC 610"
+    scope: "Rights of arrested persons, custodial guidelines"
+    status: pending
+
+  - id: judgment-arnesh-kumar
+    title: "Arnesh Kumar v. State of Bihar (2014)"
+    url: "https://main.sci.gov.in/"
+    publisher: "Supreme Court of India"
+    retrieved: null
+    version: "(2014) 8 SCC 273"
+    scope: "Arrest guidelines under Section 41 CrPC (now BNSS)"
+    status: pending
+
+  - id: judgment-puttaswamy
+    title: "K.S. Puttaswamy v. Union of India (2017)"
+    url: "https://main.sci.gov.in/"
+    publisher: "Supreme Court of India"
+    retrieved: null
+    version: "(2017) 10 SCC 1"
+    scope: "Right to Privacy as fundamental right"
+    status: pending
+
+  - id: judgment-vishaka
+    title: "Vishaka v. State of Rajasthan (1997)"
+    url: "https://main.sci.gov.in/"
+    publisher: "Supreme Court of India"
+    retrieved: null
+    version: "AIR 1997 SC 3011"
+    scope: "Sexual harassment at workplace guidelines"
+    status: pending
+
+  - id: judgment-navtej-johar
+    title: "Navtej Singh Johar v. Union of India (2018)"
+    url: "https://main.sci.gov.in/"
+    publisher: "Supreme Court of India"
+    retrieved: null
+    version: "AIR 2018 SC 4321"
+    scope: "Decriminalization of Section 377 IPC"
+    status: pending

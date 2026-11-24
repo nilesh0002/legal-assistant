@@ -1,0 +1,15 @@
+# Old Law -> New Law Mapping: IPC -> BNS
+# ======================================
+# PLACEHOLDER entries — verify before use.
+
+mappings:
+  - old_law: "Indian Penal Code, 1860"
+    old_short: "IPC"
+    new_law: "Bharatiya Nyaya Sanhita, 2023"
+    new_short: "BNS"
+    sections:
+      - old_section: "Section 377"
+        new_section: "Omitted"
+        topic: "Unnatural offences (struck down by Navtej Johar)"
+        status: pending
+        notes: "Section 377 was read down by Supreme Court in 2018; BNS omits it entirely"
