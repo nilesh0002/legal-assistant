@@ -42,7 +42,7 @@ app = FastAPI(
         "Every answer is grounded in retrieved passages and validated "
         "before being returned."
     ),
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 

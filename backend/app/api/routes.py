@@ -52,7 +52,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "Indian Legal Knowledge Assistant",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
