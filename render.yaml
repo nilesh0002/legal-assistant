@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: nyayasahayak-backend
+    name: legal-assistant-backend
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
     region: oregon
     envVars:
