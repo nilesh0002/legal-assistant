@@ -86,6 +86,11 @@ class AskService:
         if b_score > 0.20 and v_score >= 0.67:
             return True
 
+        # BNSS statutory provisions (e.g. bail under Chapter XXXV, arrest under Chapter V)
+        # where keyword match is strong (>= 0.40) and vector relevance is genuine (>= 0.61)
+        if top_chunk.source_id == "bnss-2023" and b_score >= 0.40 and v_score >= 0.61:
+            return True
+
         return False
 
     async def answer_question(self, question: str) -> LegalResponse:
