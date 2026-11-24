@@ -15,14 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download the embedding model so container startup is fast
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-small-en-v1.5')"
-
 # Copy backend application source code
 COPY backend/ /app/
 
-# Build/verify Chroma vector index from pre-processed corpus
-RUN python -m pipeline.index_corpus
+# Pre-build Chroma vector index (optional at build-time; app auto-initializes on startup if empty)
+RUN python -m pipeline.index_corpus || true
 
 EXPOSE 8000
 
