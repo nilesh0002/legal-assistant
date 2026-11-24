@@ -8,100 +8,111 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     .legal-quote { font-family: 'Merriweather', serif; }
+    /* Touch target optimizations for mobile phones */
+    button, input, a { touch-action: manipulation; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
 
   <!-- Header -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md shrink-0">
           ⚖️
         </div>
         <div>
-          <h1 class="text-lg font-bold text-slate-900 leading-tight">NyayaSahayak</h1>
-          <p class="text-xs text-slate-500">Indian Legal Knowledge Assistant</p>
+          <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">NyayaSahayak</h1>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-medium">Indian Legal Assistant</p>
         </div>
       </div>
       
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2 sm:space-x-3">
         <!-- Live Connection Badge -->
-        <div id="backend-status" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+        <div id="backend-status" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           <span id="backend-status-text">Connecting...</span>
         </div>
 
         <!-- Android APK Download Button -->
-        <a href="https://github.com/nilesh0002/legal-assistant/releases/latest" target="_blank" class="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
+        <a href="https://github.com/nilesh0002/legal-assistant/releases/latest" target="_blank" class="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition" title="Download Android App">
           <span>📱</span>
-          <span>Get APK</span>
+          <span class="hidden xs:inline">App</span>
         </a>
 
         <!-- Settings Cog -->
-        <button id="btn-settings" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100" title="API Settings">
+        <button id="btn-settings" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition" title="API Settings">
           ⚙️
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Settings Modal (Hidden by default) -->
-  <div id="modal-settings" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <h3 class="text-lg font-bold text-slate-900">Backend Server Configuration</h3>
-      <p class="text-xs text-slate-500">Configure the API endpoint used by this web client:</p>
+  <!-- Settings Modal -->
+  <div id="modal-settings" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base sm:text-lg font-bold text-slate-900">Backend Server Settings</h3>
+        <button id="btn-settings-close-x" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+      </div>
+      <p class="text-xs text-slate-600">The mobile web client connects to the live backend server hosted on Render:</p>
       <div>
         <label class="block text-xs font-semibold text-slate-700 mb-1">API Base URL</label>
-        <input type="text" id="input-base-url" class="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none" value="https://legal-assistant-1qgm.onrender.com">
+        <input type="text" id="input-base-url" class="w-full px-3 py-2 border rounded-lg text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none" value="https://legal-assistant-1qgm.onrender.com">
       </div>
       <div class="flex justify-end space-x-2 pt-2">
-        <button id="btn-settings-cancel" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+        <button id="btn-settings-cancel" class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
         <button id="btn-settings-save" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save & Reconnect</button>
       </div>
     </div>
   </div>
 
   <!-- Main Container -->
-  <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full flex flex-col space-y-6">
+  <main class="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1 w-full flex flex-col space-y-4 sm:space-y-6">
 
     <!-- Mandatory Disclaimer Banner -->
-    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start space-x-2 text-xs text-amber-900">
-      <span class="text-base leading-none">⚠️</span>
-      <div>
-        <strong>General information, not legal advice:</strong> All answers are grounded strictly in approved, official Government of India statutes. For individual legal advice, consult an advocate.
+    <div class="bg-amber-50/90 border border-amber-200 rounded-xl p-3 flex items-start space-x-2.5 text-xs text-amber-900">
+      <span class="text-base leading-none shrink-0 mt-0.5">⚠️</span>
+      <div class="leading-relaxed">
+        <strong>General information, not legal advice:</strong> All answers are strictly grounded in official Government of India statutes (Constitution & BNSS 2023). For legal proceedings or representation, consult an enrolled advocate.
       </div>
     </div>
 
     <!-- Search / Ask Section -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
-      <form id="ask-form" class="flex items-center space-x-2">
-        <input 
-          type="text" 
-          id="question-input" 
-          placeholder="Ask a question about the Constitution or BNSS (e.g. rights on arrest)..." 
-          class="flex-1 px-4 py-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          required
-        >
+    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs space-y-3">
+      <form id="ask-form" class="flex flex-col sm:flex-row gap-2">
+        <div class="relative flex-1">
+          <input 
+            type="text" 
+            id="question-input" 
+            placeholder="Ask e.g. procedure for bail, rights on arrest, Article 21..." 
+            class="w-full pl-3.5 pr-8 py-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50/50"
+            required
+            autocomplete="off"
+          >
+          <button type="button" id="clear-input-btn" class="hidden absolute right-2.5 top-3 text-slate-400 hover:text-slate-600 text-sm">✕</button>
+        </div>
         <button 
           type="submit" 
           id="ask-button"
-          class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition flex items-center space-x-1.5 disabled:opacity-50"
+          class="px-5 py-3 bg-indigo-600 active:bg-indigo-800 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center space-x-2 shadow-xs shrink-0 disabled:opacity-50"
         >
-          <span>Ask</span>
+          <span>Ask Assistant</span>
           <span id="ask-spinner" class="hidden animate-spin">⏳</span>
         </button>
       </form>
 
       <!-- Suggested Question Chips -->
-      <div class="pt-1 flex flex-wrap gap-1.5 items-center">
-        <span class="text-xs text-slate-400 font-medium mr-1">Try:</span>
-        <button class="chip text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200 transition">What is Article 21?</button>
-        <button class="chip text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200 transition">When can police arrest without warrant?</button>
-        <button class="chip text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200 transition">What are fundamental duties under Article 51A?</button>
-        <button class="chip text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200 transition">What is the procedure for bail under BNSS?</button>
+      <div class="pt-1">
+        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Common Legal Questions:</div>
+        <div class="flex flex-wrap gap-1.5 items-center">
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Procedure for bail under BNSS?</button>
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">When can police arrest without warrant?</button>
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">What is Article 21?</button>
+          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Fundamental duties under Article 51A</button>
+        </div>
       </div>
     </div>
 
@@ -111,14 +122,15 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+  <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
     <div class="max-w-4xl mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
-      <p>NyayaSahayak — Grounded Indian Legal Knowledge System</p>
-      <p>Corpus: Constitution of India (Parts III, IV, IVA) & Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023</p>
-      <p class="pt-1 text-slate-400">
-        <a href="https://github.com/nilesh0002/legal-assistant" target="_blank" class="hover:underline">GitHub Repository</a> • 
-        <a href="https://github.com/nilesh0002/legal-assistant/releases" target="_blank" class="hover:underline">Download Android APK</a>
-      </p>
+      <p class="font-medium text-slate-700">NyayaSahayak — Grounded Indian Legal Knowledge System</p>
+      <p class="text-[11px] text-slate-400">Sources: Constitution of India & Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023</p>
+      <div class="pt-1 flex items-center justify-center space-x-3 text-[11px] text-indigo-600">
+        <a href="https://github.com/nilesh0002/legal-assistant" target="_blank" class="hover:underline">GitHub</a>
+        <span>•</span>
+        <a href="https://github.com/nilesh0002/legal-assistant/releases" target="_blank" class="hover:underline font-semibold">Download Android App</a>
+      </div>
     </div>
   </footer>
 
@@ -130,34 +142,51 @@
     const backendStatusEl = document.getElementById("backend-status");
     const backendStatusText = document.getElementById("backend-status-text");
     const questionInput = document.getElementById("question-input");
+    const clearInputBtn = document.getElementById("clear-input-btn");
     const askForm = document.getElementById("ask-form");
     const askButton = document.getElementById("ask-button");
     const askSpinner = document.getElementById("ask-spinner");
     const resultsArea = document.getElementById("results-area");
 
+    // Clear input button toggle
+    questionInput.addEventListener("input", () => {
+      clearInputBtn.classList.toggle("hidden", !questionInput.value.trim());
+    });
+    clearInputBtn.onclick = () => {
+      questionInput.value = "";
+      clearInputBtn.classList.add("hidden");
+      questionInput.focus();
+    };
+
     // Check Backend Health
     async function checkHealth() {
-      backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200";
+      backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200";
       backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
       backendStatusText.textContent = "Connecting...";
 
       try {
-        const res = await fetch(`${BASE_URL}/health`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(`${BASE_URL}/health`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
-          backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
+          backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
           backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-emerald-500";
           backendStatusText.textContent = "Live";
         } else {
           throw new Error("Non-200 response");
         }
       } catch (err) {
-        backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200";
+        backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200";
         backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-rose-500";
-        backendStatusText.textContent = "Offline";
+        backendStatusText.textContent = "Cold / Retrying";
       }
     }
 
     checkHealth();
+    // Periodic health check every 30s
+    setInterval(checkHealth, 30000);
 
     // Settings Modal
     document.getElementById("btn-settings").onclick = () => {
@@ -165,6 +194,9 @@
       document.getElementById("modal-settings").classList.remove("hidden");
     };
     document.getElementById("btn-settings-cancel").onclick = () => {
+      document.getElementById("modal-settings").classList.add("hidden");
+    };
+    document.getElementById("btn-settings-close-x").onclick = () => {
       document.getElementById("modal-settings").classList.add("hidden");
     };
     document.getElementById("btn-settings-save").onclick = () => {
@@ -181,6 +213,7 @@
     document.querySelectorAll(".chip").forEach(chip => {
       chip.onclick = () => {
         questionInput.value = chip.textContent;
+        clearInputBtn.classList.remove("hidden");
         askForm.dispatchEvent(new Event("submit"));
       };
     });
@@ -194,13 +227,20 @@
       askButton.disabled = true;
       askSpinner.classList.remove("hidden");
 
-      // Add loading card
+      // Add friendly loading card
       const loadCard = document.createElement("div");
-      loadCard.className = "bg-white rounded-2xl border border-slate-200 p-6 shadow-sm animate-pulse space-y-3";
+      loadCard.className = "bg-white rounded-2xl border border-indigo-100 p-4 sm:p-5 shadow-xs space-y-3";
       loadCard.innerHTML = `
-        <div class="h-4 bg-slate-200 rounded w-1/4"></div>
-        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
-        <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm animate-spin">⚖️</div>
+          <div>
+            <h4 class="text-sm font-semibold text-slate-800">Searching Indian Legal Statutes & Corpus...</h4>
+            <p class="text-xs text-slate-500">Cross-verifying BNSS & Constitutional sections (Render may take ~15s if server was sleeping)</p>
+          </div>
+        </div>
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+          <div class="bg-indigo-600 h-full w-2/3 animate-pulse"></div>
+        </div>
       `;
       resultsArea.prepend(loadCard);
 
@@ -224,13 +264,13 @@
 
     function renderAnswer(data, question) {
       const card = document.createElement("div");
-      card.className = "bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4";
+      card.className = "bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4";
 
       if (data.status === "insufficient_evidence") {
         card.innerHTML = `
-          <div class="border-l-4 border-rose-500 pl-4 py-1">
+          <div class="border-l-4 border-rose-500 pl-3.5 py-1">
             <h3 class="font-bold text-rose-800 text-sm">Insufficient Official Evidence</h3>
-            <p class="text-xs text-slate-600 mt-1">The system refused to generate an answer because no verified passages in the approved legal corpus directly support this query. The system does not speculate.</p>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">The system refused to generate an answer because no verified passages in the approved legal corpus directly support this query. The system does not speculate.</p>
           </div>
         `;
         resultsArea.prepend(card);
@@ -239,9 +279,9 @@
 
       if (data.status === "out_of_scope") {
         card.innerHTML = `
-          <div class="border-l-4 border-amber-500 pl-4 py-1">
+          <div class="border-l-4 border-amber-500 pl-3.5 py-1">
             <h3 class="font-bold text-amber-800 text-sm">Question Outside Corpus Scope</h3>
-            <p class="text-xs text-slate-600 mt-1">This query appears outside the currently indexed corpus (Constitution Parts III, IV, IVA & BNSS 2023). Please ask about fundamental rights, duties, directive principles, arrest, or bail.</p>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">This query appears outside the currently indexed corpus (Constitution Parts III, IV, IVA & BNSS 2023). Please ask about fundamental rights, duties, directive principles, arrest, or bail.</p>
           </div>
         `;
         resultsArea.prepend(card);
@@ -254,30 +294,33 @@
 
       card.innerHTML = `
         <div>
-          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">Verified Legal Answer</span>
-          <h2 class="text-base font-bold text-slate-900 mt-2">${escapeHtml(data.question || question)}</h2>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Grounded Legal Answer</span>
+            ${data.last_verified ? `<span class="text-[11px] text-slate-400">Verified: ${escapeHtml(data.last_verified)}</span>` : ""}
+          </div>
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 mt-2">${escapeHtml(data.question || question)}</h2>
         </div>
 
         <!-- Layer 1: Simple / Detailed Toggle -->
-        <div class="border-b border-slate-200 flex space-x-6 text-sm font-semibold">
+        <div class="border-b border-slate-200 flex space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
           <button id="${cardId}-tab-simple" onclick="switchTab('${cardId}', 'simple')" class="pb-2 border-b-2 border-indigo-600 text-indigo-600">Simple Explanation</button>
           <button id="${cardId}-tab-detailed" onclick="switchTab('${cardId}', 'detailed')" class="pb-2 text-slate-500 hover:text-slate-800 border-b-2 border-transparent">Detailed Summary</button>
         </div>
 
-        <div id="${cardId}-content-simple" class="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <div id="${cardId}-content-simple" class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200">
           ${escapeHtml(simpleText)}
         </div>
 
-        <div id="${cardId}-content-detailed" class="text-sm text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 hidden">
+        <div id="${cardId}-content-detailed" class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200 hidden">
           ${escapeHtml(detailedText)}
         </div>
 
         <!-- Key Points -->
         ${data.key_points && data.key_points.length ? `
-          <div class="space-y-1">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Key Operative Points</h4>
-            <ul class="text-xs text-slate-700 space-y-1 list-disc list-inside">
-              ${data.key_points.map(pt => `<li>${escapeHtml(pt)}</li>`).join("")}
+          <div class="space-y-1.5 pt-1">
+            <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Key Operative Points</h4>
+            <ul class="text-xs text-slate-700 space-y-1.5 list-disc list-inside bg-white">
+              ${data.key_points.map(pt => `<li class="leading-relaxed">${escapeHtml(pt)}</li>`).join("")}
             </ul>
           </div>
         ` : ""}
@@ -285,23 +328,23 @@
         <!-- Layer 2 Accordion -->
         ${data.details && data.details.length ? `
           <div class="pt-2">
-            <button onclick="toggleDetails('${cardId}')" class="flex items-center justify-between w-full p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition">
+            <button onclick="toggleDetails('${cardId}')" class="flex items-center justify-between w-full p-3 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-xs font-bold text-slate-700 transition">
               <span>📜 Show Statutory Details & Official Sources (${data.details.length})</span>
               <span id="${cardId}-chevron">▼</span>
             </button>
             <div id="${cardId}-details" class="hidden space-y-3 pt-3">
               ${data.details.map(d => `
-                <div class="p-4 rounded-xl border border-indigo-100 bg-indigo-50/30 space-y-2 text-xs">
-                  <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="p-3.5 sm:p-4 rounded-xl border border-indigo-100 bg-indigo-50/30 space-y-2 text-xs">
+                  <div class="flex items-center justify-between flex-wrap gap-1.5">
                     <span class="font-bold text-indigo-900">${escapeHtml(d.section)} (${escapeHtml(d.law)})</span>
-                    ${d.old_equivalent ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-mono">${escapeHtml(d.old_equivalent)}</span>` : ""}
+                    ${d.old_equivalent ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[11px] font-mono">${escapeHtml(d.old_equivalent)}</span>` : ""}
                   </div>
-                  <div class="legal-quote italic text-slate-800 bg-white p-3 rounded-lg border border-slate-200">
+                  <div class="legal-quote italic text-slate-800 bg-white p-3 rounded-lg border border-slate-200 leading-relaxed">
                     "${escapeHtml(d.quote)}"
                   </div>
-                  <div class="flex items-center justify-between text-slate-500 text-[11px] pt-1">
+                  <div class="flex items-center justify-between text-slate-500 text-[11px] pt-1 flex-wrap gap-1">
                     <span>Source: <a href="${escapeHtml(d.source_url)}" target="_blank" class="text-indigo-600 underline font-medium">${escapeHtml(d.source_title)}</a></span>
-                    ${data.last_verified ? `<span>Verified: ${escapeHtml(data.last_verified)}</span>` : ""}
+                    ${d.location ? `<span class="text-slate-400">${escapeHtml(d.location)}</span>` : ""}
                   </div>
                 </div>
               `).join("")}
@@ -310,11 +353,11 @@
         ` : ""}
 
         <!-- Disclaimer & Feedback -->
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2 text-xs text-slate-500">
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2 text-[11px] text-slate-500">
           <span>${escapeHtml(data.disclaimer || "General information, not legal advice.")}</span>
-          <div class="flex space-x-1">
-            <button onclick="alert('Thank you for your feedback!')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded">👍 Helpful</button>
-            <button onclick="alert('Thank you for reporting!')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded">👎 Wrong</button>
+          <div class="flex space-x-1.5">
+            <button onclick="alert('Thank you for your feedback!')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs">👍 Helpful</button>
+            <button onclick="alert('Thank you for reporting!')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs">👎 Wrong</button>
           </div>
         </div>
       `;
@@ -355,10 +398,16 @@
 
     function renderError(err, question) {
       const card = document.createElement("div");
-      card.className = "bg-rose-50 rounded-2xl border border-rose-200 p-4 text-xs text-rose-800 space-y-1";
+      card.className = "bg-rose-50 rounded-2xl border border-rose-200 p-4 text-xs text-rose-800 space-y-2";
       card.innerHTML = `
-        <strong>Error reaching backend:</strong> ${escapeHtml(err)}<br>
-        Make sure the backend at <code class="font-mono">${escapeHtml(BASE_URL)}</code> is active.
+        <div class="font-bold flex items-center space-x-1.5">
+          <span>⚠️</span>
+          <span>Could not reach backend service:</span>
+        </div>
+        <p class="text-rose-700">${escapeHtml(err)}</p>
+        <p class="text-slate-600 text-[11px] pt-1">
+          <strong>Tip for Render Free Tier:</strong> If the backend has been idle, Render puts it to sleep. It automatically wakes up in ~15 to 25 seconds. Please tap "Ask" again in a few moments!
+        </p>
       `;
       resultsArea.prepend(card);
     }

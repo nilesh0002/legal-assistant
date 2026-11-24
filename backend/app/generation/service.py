@@ -133,14 +133,16 @@ class AskService:
             )
 
         # 4. Check for fake article / section / case queries:
-        # If the user asks for a specific Article/Section not present in retrieved context, refuse immediately
+        # If the user asks for a specific Article not present in retrieved context, refuse immediately
         query_articles = re.findall(r"\bArticle\s+(\d+[A-Z]?)\b", question, re.IGNORECASE)
-        context_articles = {
-            m.group(1).upper()
-            for c in chunks
-            for m in [re.search(r"\bArticle\s+(\d+[A-Z]?)\b", c.metadata.get("article", ""), re.IGNORECASE)]
-            if m
-        }
+        context_articles = set()
+        for c in chunks:
+            for val in c.metadata.values():
+                if isinstance(val, str):
+                    for m in re.findall(r"\bArticle\s+(\d+[A-Z]?)\b", val, re.IGNORECASE):
+                        context_articles.add(m.upper())
+            for m in re.findall(r"\bArticle\s+(\d+[A-Z]?)\b", c.text, re.IGNORECASE):
+                context_articles.add(m.upper())
         for q_art in query_articles:
             if q_art.upper() not in context_articles:
                 return LegalResponse(

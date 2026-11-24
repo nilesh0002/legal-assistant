@@ -27,6 +27,37 @@ def load_approved_sources(sources_path: Optional[Path] = None) -> dict:
     return {s["id"]: s for s in sources if isinstance(s, dict) and "id" in s}
 
 
+def load_section_mappings(mappings_dir: Optional[Path] = None) -> Dict[str, set]:
+    """
+    Load crpc_to_bnss.yaml and ipc_to_bns.yaml to map sections bidirectionally.
+    Returns dict mapping section number string (e.g. '479') to set of equivalent section numbers (e.g. {'479', '436A'}).
+    """
+    map_dir = mappings_dir or (BASE_DIR / "data" / "mappings")
+    equiv_map: Dict[str, set] = {}
+    if not map_dir.exists():
+        return equiv_map
+
+    for yml in map_dir.glob("*.yaml"):
+        try:
+            with open(yml, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+            mappings = data.get("mappings", [])
+            for m in mappings:
+                for sec_entry in m.get("sections", []):
+                    old_sec_str = str(sec_entry.get("old_section", ""))
+                    new_sec_str = str(sec_entry.get("new_section", ""))
+                    old_nums = re.findall(r"\b(\d+[A-Z]?)\b", old_sec_str)
+                    new_nums = re.findall(r"\b(\d+[A-Z]?)\b", new_sec_str)
+                    all_nums = {n.upper() for n in old_nums + new_nums}
+                    for n in all_nums:
+                        if n not in equiv_map:
+                            equiv_map[n] = set()
+                        equiv_map[n].update(all_nums)
+        except Exception:
+            pass
+    return equiv_map
+
+
 def normalize_whitespace(text: str) -> str:
     """Normalize any sequence of whitespace chars to a single space."""
     return " ".join(text.strip().split())
@@ -37,11 +68,20 @@ class LegalResponseValidator(BaseValidator):
     Validates legal responses against retrieved context and sources.yaml.
     """
 
-    def __init__(self, sources_registry: Optional[dict] = None):
+    def __init__(
+        self,
+        sources_registry: Optional[dict] = None,
+        section_mappings: Optional[dict] = None,
+    ):
         self.approved_sources = (
             sources_registry
             if sources_registry is not None
             else load_approved_sources()
+        )
+        self.section_mappings = (
+            section_mappings
+            if section_mappings is not None
+            else load_section_mappings()
         )
 
     def validate(
@@ -134,10 +174,12 @@ class LegalResponseValidator(BaseValidator):
         mentioned_articles = set(re.findall(r"\bArticle\s+(\d+[A-Z]?)\b", all_output_text, re.IGNORECASE))
         context_articles = set()
         for meta in all_context_meta:
-            art = meta.get("article", "")
-            m = re.search(r"\bArticle\s+(\d+[A-Z]?)\b", art, re.IGNORECASE)
-            if m:
-                context_articles.add(m.group(1).upper())
+            for val in meta.values():
+                if isinstance(val, str):
+                    for m in re.findall(r"\bArticle\s+(\d+[A-Z]?)\b", val, re.IGNORECASE):
+                        context_articles.add(m.upper())
+                    for m in re.findall(r"^\s*(\d+[A-Z]?)\s*$", val):
+                        context_articles.add(m.upper())
         for m in re.findall(r"\bArticle\s+(\d+[A-Z]?)\b", all_context_combined, re.IGNORECASE):
             context_articles.add(m.upper())
 
@@ -151,12 +193,22 @@ class LegalResponseValidator(BaseValidator):
         mentioned_sections = set(re.findall(r"\bSection\s+(\d+[A-Z]?)\b", all_output_text, re.IGNORECASE))
         context_sections = set()
         for meta in all_context_meta:
-            sec = meta.get("section", "")
-            m = re.search(r"\bSection\s+(\d+[A-Z]?)\b", sec, re.IGNORECASE)
-            if m:
-                context_sections.add(m.group(1).upper())
+            for val in meta.values():
+                if isinstance(val, str):
+                    for sec in re.findall(r"\bSection\s+(\d+[A-Z]?)\b", val, re.IGNORECASE):
+                        context_sections.add(sec.upper())
+                    for sec in re.findall(r"^\s*(\d+[A-Z]?)\s*$", val):
+                        context_sections.add(sec.upper())
         for m in re.findall(r"\bSection\s+(\d+[A-Z]?)\b", all_context_combined, re.IGNORECASE):
             context_sections.add(m.upper())
+
+        # Expand sections with statutory mappings (e.g. CrPC Section 436A <-> BNSS Section 479)
+        if hasattr(self, "section_mappings") and self.section_mappings:
+            mapped_expansion = set()
+            for sec in list(context_sections):
+                if sec in self.section_mappings:
+                    mapped_expansion.update(self.section_mappings[sec])
+            context_sections.update(mapped_expansion)
 
         for sec in mentioned_sections:
             if sec.upper() not in context_sections:
