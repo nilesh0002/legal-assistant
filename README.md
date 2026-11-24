@@ -56,9 +56,9 @@ legal-assistant/
 
 You can download the pre-compiled Android APK directly from GitHub Releases:
 
-➡️ **[Download Latest Android APK (app-debug.apk)](https://github.com/nilesh0002/nyayasahayak/releases/latest/download/app-debug.apk)**
+➡️ **[Download Latest Android APK (app-debug.apk)](https://github.com/nilesh0002/legal-assistant/releases/latest/download/app-debug.apk)**
 
-*Or visit the [GitHub Releases](https://github.com/nilesh0002/nyayasahayak/releases) page to choose a specific version or download build artifacts from GitHub Actions.*
+*Or visit the [GitHub Releases](https://github.com/nilesh0002/legal-assistant/releases) page to choose a specific version or download build artifacts from GitHub Actions.*
 
 ### How to Install on Android
 1. Download `app-debug.apk` directly to your Android device using Chrome or your browser.
