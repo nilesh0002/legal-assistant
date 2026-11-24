@@ -50,6 +50,52 @@ sources:
     scope: "Referenced via old-new law mapping"
     status: pending
 
+  # Verified Web Legal Databases
+  - id: indian-kanoon
+    title: "Indian Kanoon"
+    url: "https://indiankanoon.org/"
+    publisher: "Indian Kanoon Legal Repository"
+    retrieved: "2026-11-24"
+    version: "Supreme Court & High Court Judgments"
+    scope: "Reported Judgments & Headnotes"
+    status: active
+
+  - id: prs-india
+    title: "PRS Legislative Research"
+    url: "https://prsindia.org/"
+    publisher: "PRS Legislative Research"
+    retrieved: "2026-11-24"
+    version: "Acts of Parliament & Legislative Analyses"
+    scope: "Criminal Law Reforms & Statutory Bills"
+    status: active
+
+  - id: livelaw
+    title: "LiveLaw"
+    url: "https://www.livelaw.in/"
+    publisher: "LiveLaw Legal Portal"
+    retrieved: "2026-11-24"
+    version: "Court Orders & Legal Reports"
+    scope: "Supreme Court and High Court Orders"
+    status: active
+
+  - id: bar-and-bench
+    title: "Bar and Bench"
+    url: "https://www.barandbench.com/"
+    publisher: "Bar and Bench Legal News"
+    retrieved: "2026-11-24"
+    version: "Judicial Reports & Orders"
+    scope: "Court Reporting & Analysis"
+    status: active
+
+  - id: ecourts
+    title: "eCourts Services"
+    url: "https://ecourts.gov.in/"
+    publisher: "eCommittee, Supreme Court of India"
+    retrieved: "2026-11-24"
+    version: "National Judicial Data Grid"
+    scope: "Case Status & Official Court Orders"
+    status: active
+
   # Landmark judgments
   - id: judgment-kesavananda
     title: "Kesavananda Bharati v. State of Kerala (1973)"

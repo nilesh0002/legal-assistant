@@ -10,6 +10,7 @@ from app.generation.base import BaseLLM
 from app.generation.factory import get_llm_provider
 from app.models.schemas import AnswerStatus, LegalResponse
 from app.retrieval.hybrid import HybridRetriever
+from app.retrieval.web_search import WebLegalRetriever
 from app.validation.validator import LegalResponseValidator
 
 # Queries clearly out-of-scope (non-Indian law, sports, cooking, prompt injection)
@@ -50,11 +51,13 @@ class AskService:
         llm: Optional[BaseLLM] = None,
         validator: Optional[LegalResponseValidator] = None,
         min_vector_threshold: float = 0.68,
+        web_retriever: Optional[WebLegalRetriever] = None,
     ):
         self.retriever = retriever or HybridRetriever()
         self.llm = llm
         self.validator = validator or LegalResponseValidator()
         self.min_vector_threshold = min_vector_threshold
+        self.web_retriever = web_retriever or WebLegalRetriever()
 
     def _is_out_of_scope(self, query: str) -> bool:
         lowered = query.lower()
@@ -68,6 +71,9 @@ class AskService:
         Check if the top retrieved chunk provides genuine evidence
         rather than baseline embedding noise.
         """
+        if top_chunk.source_id in {"indian-kanoon", "prs-india", "livelaw", "bar-and-bench", "ecourts"}:
+            return True
+
         v_score = top_chunk.metadata.get("vector_score", 0.0)
         b_score = top_chunk.metadata.get("bm25_score", 0.0)
 
@@ -98,6 +104,21 @@ class AskService:
 
         # 2. Retrieve passages via Hybrid Search
         chunks = await self.retriever.search(query=question, top_k=5)
+
+        # 2b. Live legal search if query is about case law, judgments, or judicial doctrines
+        is_case_query = bool(re.search(
+            r"\b(?:v\.|versus|vs\.|case\b|judgment\b|ruling\b|doctrine\b|bench\b|petitioner\b|respondent\b|landmark\b|supreme court\b|high court\b|kanoon\b|livelaw\b|prs\b)\b",
+            question,
+            re.IGNORECASE
+        ))
+
+        if is_case_query:
+            try:
+                web_chunks = await self.web_retriever.search_live_legal_web(question, max_docs=2)
+                if web_chunks:
+                    chunks = web_chunks + chunks
+            except Exception:
+                pass
 
         # 3. Evidence confidence threshold
         if not chunks or not self._has_sufficient_evidence(chunks[0]):

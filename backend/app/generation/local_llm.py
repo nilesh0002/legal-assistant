@@ -96,14 +96,19 @@ class LocalGroundedLLM(BaseLLM):
             key_points.append(f"Previous Law Reference: Corresponding provision was {old_equiv} (needs human review).")
 
         # Resolve official URL
-        if source_id == "bnss-2023":
+        if meta.get("source_url"):
+            source_url = meta.get("source_url")
+        elif source_id == "bnss-2023":
             source_url = "https://egazette.gov.in/WriteReadData/2023/250884.pdf"
+        elif source_id == "indian-kanoon":
+            source_url = "https://indiankanoon.org/"
         else:
             source_url = "https://legislative.gov.in/static/uploads/2025/07/c9fe9c9b6840524844316f74bb1c556c.pdf"
 
         # Construct verified detail with verbatim quote and clear claim
+        claim_title = clean_title.lower() if clean_title else "legal principles"
         detail = SourceDetail(
-            claim=f"{provision} provides for {clean_title.lower()}",
+            claim=f"{provision} provides for {claim_title}",
             law=law,
             section=provision,
             old_equivalent=old_equiv,
@@ -111,7 +116,7 @@ class LocalGroundedLLM(BaseLLM):
             source_id=source_id,
             source_title=raw_title or f"{provision}: {clean_title}",
             source_url=source_url,
-            location=location,
+            location=location or "Reported text",
         )
 
         # Determine last_verified date strictly from approved sources.yaml record
