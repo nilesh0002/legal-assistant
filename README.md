@@ -52,6 +52,14 @@ legal-assistant/
 └── README.md
 ```
 
+## 🌐 Live Web App
+
+Try NyayaSahayak directly in your browser:
+
+➡️ **[Open NyayaSahayak Web App](https://legal-assistant-web-rho.vercel.app/)**
+
+---
+
 ## 📱 Download Android APK
 
 You can download the pre-compiled Android APK directly from GitHub Releases:
