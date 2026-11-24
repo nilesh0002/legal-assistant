@@ -1,5 +1,7 @@
 package com.legalassistant.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,11 +14,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.legalassistant.BuildConfig
+import com.legalassistant.data.api.GitHubUpdateChecker
+import com.legalassistant.data.api.UpdateInfo
 import com.legalassistant.ui.AppScreen
 import com.legalassistant.ui.LegalChatViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,9 +31,13 @@ fun AboutScreen(
     viewModel: LegalChatViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
     var tempUrl by remember { mutableStateOf(uiState.baseUrl) }
     var saveMessage by remember { mutableStateOf<String?>(null) }
+    var isCheckingUpdate by remember { mutableStateOf(false) }
+    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -130,6 +141,115 @@ fun AboutScreen(
                         style = MaterialTheme.typography.bodySmall,
                         lineHeight = 18.sp
                     )
+                }
+            }
+
+            // App Updates & Version Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "App Version",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    isCheckingUpdate = true
+                                    updateInfo = GitHubUpdateChecker.checkForUpdate(BuildConfig.VERSION_NAME)
+                                    isCheckingUpdate = false
+                                }
+                            },
+                            enabled = !isCheckingUpdate
+                        ) {
+                            if (isCheckingUpdate) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Checking...")
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Outlined.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Check Updates")
+                            }
+                        }
+                    }
+
+                    if (updateInfo != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        val info = updateInfo!!
+                        if (info.hasUpdate) {
+                            Card(
+                                shape = RoundedCornerShape(10.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                ),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "🎉 New Version Available: ${info.latestVersion}",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Tap below to download and update the app. Your local chat history and settings are preserved.",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Button(
+                                        onClick = {
+                                            info.downloadUrl?.let { url ->
+                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                                context.startActivity(intent)
+                                            }
+                                        },
+                                        modifier = Modifier.align(Alignment.End)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Download,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("Download & Install")
+                                    }
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = "✅ You have the latest version installed.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
             }
 
