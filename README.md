@@ -154,6 +154,15 @@ These choices were made to keep moving. Flag if you disagree:
 6. **10.0.2.2** is used as the backend URL in the Android emulator.
    For physical device testing, change `BASE_URL` in `app/build.gradle.kts`.
 
+## Assumptions
+
+1. **Official Sources Only**: All non-official and third-party sources (`indian-kanoon`, `prs-india`, `livelaw`, `bar-and-bench`) and live web retrieval tools (`web_search.py`, `WebLegalRetriever`) have been strictly purged from `sources.yaml` and backend code.
+2. **Network Isolation**: The `/ask` retrieval, thresholding, and validation pipeline runs 100% offline without network calls. Only external LLM calls (e.g. Gemini) are allowed network access.
+3. **Deterministic Cross-Feature Reranking**: Replaced external heavy ONNX model downloads with an offline cross-encoder reranker combining vector similarity, BM25 signals, title precision/recall (F1), exact phrase matching, and multi-query agreement.
+4. **Calibrated Evidence Gating**: Replaced brittle vector cutoffs with a two-gate calibrated threshold: high semantic vector score (>= 0.67) or solid semantic score (>= 0.64) combined with multi-query agreement (>= 2) and high rerank score (>= 0.67). Uncovered legal topics reliably return `insufficient_evidence`.
+5. **Conversational Memory**: Follow-up questions resolve conversational references (last 2 turns) strictly in-memory per request body with no server-side user data retention.
+6. **Statutory Coverage**: BNSS 2023 corpus expanded to 46 key sections covering arrest procedure, rights of arrested persons, summons/warrants, search/seizure, remand custody limits, and bail.
+
 ## Milestones
 
 | M# | Name | Status |

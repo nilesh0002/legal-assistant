@@ -52,7 +52,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "Indian Legal Knowledge Assistant",
-        "version": "0.2.0",
+        "version": "0.1.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -114,4 +114,5 @@ async def ask_legal_question(request: QuestionRequest):
     5. Returns structured JSON with mandatory legal disclaimer.
     """
     service = get_ask_service()
-    return await service.answer_question(request.question)
+    conv = [t.model_dump() for t in request.conversation_history] if request.conversation_history else None
+    return await service.answer_question(request.question, conversation_history=conv)

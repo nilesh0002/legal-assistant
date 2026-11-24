@@ -100,8 +100,6 @@ class LocalGroundedLLM(BaseLLM):
             source_url = meta.get("source_url")
         elif source_id == "bnss-2023":
             source_url = "https://egazette.gov.in/WriteReadData/2023/250884.pdf"
-        elif source_id == "indian-kanoon":
-            source_url = "https://indiankanoon.org/"
         else:
             source_url = "https://legislative.gov.in/static/uploads/2025/07/c9fe9c9b6840524844316f74bb1c556c.pdf"
 

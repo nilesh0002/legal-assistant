@@ -48,9 +48,19 @@ class RelatedJudgment(BaseModel):
     source_id: str = Field(..., description="Must exist in the approved corpus")
 
 
+class ConversationTurn(BaseModel):
+    """A previous conversation turn sent in request body for context resolution."""
+    question: str
+    answer: Optional[str] = None
+
+
 class QuestionRequest(BaseModel):
     """What the Android app sends to /ask."""
     question: str = Field(..., min_length=3, max_length=1000)
+    conversation_history: Optional[List[ConversationTurn]] = Field(
+        default=None,
+        description="Optional previous conversation turns (max 2 used for follow-ups, no server storage)"
+    )
 
 
 class SearchRequest(BaseModel):

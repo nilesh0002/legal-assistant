@@ -3,14 +3,15 @@ Full RAG service: Orchestrates query scope detection, hybrid retrieval,
 confidence thresholding, grounded LLM answer generation, and M5 validation.
 """
 
+from typing import List, Optional
 import re
-from typing import Optional
 
 from app.generation.base import BaseLLM
 from app.generation.factory import get_llm_provider
 from app.models.schemas import AnswerStatus, LegalResponse
 from app.retrieval.hybrid import HybridRetriever
-from app.retrieval.web_search import WebLegalRetriever
+from app.retrieval.query_rewriter import QueryRewriter
+from app.retrieval.reranker import CrossEncoderReranker
 from app.validation.validator import LegalResponseValidator
 
 # Queries clearly out-of-scope (non-Indian law, sports, cooking, prompt injection)
@@ -51,13 +52,13 @@ class AskService:
         llm: Optional[BaseLLM] = None,
         validator: Optional[LegalResponseValidator] = None,
         min_vector_threshold: float = 0.68,
-        web_retriever: Optional[WebLegalRetriever] = None,
+        reranker: Optional[CrossEncoderReranker] = None,
     ):
         self.retriever = retriever or HybridRetriever()
         self.llm = llm
         self.validator = validator or LegalResponseValidator()
         self.min_vector_threshold = min_vector_threshold
-        self.web_retriever = web_retriever or WebLegalRetriever()
+        self.reranker = reranker or CrossEncoderReranker()
 
     def _is_out_of_scope(self, query: str) -> bool:
         lowered = query.lower()
@@ -69,31 +70,15 @@ class AskService:
     def _has_sufficient_evidence(self, top_chunk) -> bool:
         """
         Check if the top retrieved chunk provides genuine evidence
-        rather than baseline embedding noise.
+        using calibrated reranker gating.
         """
-        if top_chunk.source_id in {"indian-kanoon", "prs-india", "livelaw", "bar-and-bench", "ecourts"}:
-            return True
+        return self.reranker.has_sufficient_evidence(top_chunk)
 
-        v_score = top_chunk.metadata.get("vector_score", 0.0)
-        b_score = top_chunk.metadata.get("bm25_score", 0.0)
-
-        # Genuine semantic evidence requires strong vector similarity (>= 0.68).
-        # Loose keyword overlap on common words (e.g. 'traffic' matching 'traffic in human beings')
-        # with low vector similarity (< 0.67) is rejected as noise.
-        if v_score >= self.min_vector_threshold:
-            return True
-
-        if b_score > 0.20 and v_score >= 0.67:
-            return True
-
-        # BNSS statutory provisions (e.g. bail under Chapter XXXV, arrest under Chapter V)
-        # where keyword match is strong (>= 0.40) and vector relevance is genuine (>= 0.61)
-        if top_chunk.source_id == "bnss-2023" and b_score >= 0.40 and v_score >= 0.61:
-            return True
-
-        return False
-
-    async def answer_question(self, question: str) -> LegalResponse:
+    async def answer_question(
+        self,
+        question: str,
+        conversation_history: Optional[List[dict]] = None,
+    ) -> LegalResponse:
         # 1. Out-of-scope check
         if self._is_out_of_scope(question):
             return LegalResponse(
@@ -107,25 +92,36 @@ class AskService:
                 disclaimer="General information, not legal advice.",
             )
 
-        # 2. Retrieve passages via Hybrid Search
-        chunks = await self.retriever.search(query=question, top_k=5)
+        # 2. Query Understanding & Multi-Query Search
+        search_queries = QueryRewriter.rewrite_queries(question, conversation_history)
+        all_candidates = {}
+        agreement_counts = {}
+        rrf_scores = {}
+        k = 60
 
-        # 2b. Live legal search if query is about case law, judgments, or judicial doctrines
-        is_case_query = bool(re.search(
-            r"\b(?:v\.|versus|vs\.|case\b|judgment\b|ruling\b|doctrine\b|bench\b|petitioner\b|respondent\b|landmark\b|supreme court\b|high court\b|kanoon\b|livelaw\b|prs\b)\b",
-            question,
-            re.IGNORECASE
-        ))
+        for q in search_queries:
+            results = await self.retriever.search(query=q, top_k=10)
+            for rank, chunk in enumerate(results):
+                cid = chunk.chunk_id
+                if cid not in all_candidates:
+                    all_candidates[cid] = chunk
+                    agreement_counts[cid] = 0
+                    rrf_scores[cid] = 0.0
+                agreement_counts[cid] += 1
+                rrf_scores[cid] += 1.0 / (k + rank + 1)
 
-        if is_case_query:
-            try:
-                web_chunks = await self.web_retriever.search_live_legal_web(question, max_docs=2)
-                if web_chunks:
-                    chunks = web_chunks + chunks
-            except Exception:
-                pass
+        # Multi-query merged candidates
+        merged_candidates = sorted(all_candidates.values(), key=lambda c: rrf_scores[c.chunk_id], reverse=True)
 
-        # 3. Evidence confidence threshold
+        # 3. Cross-Encoder Reranker
+        chunks = self.reranker.rerank(
+            query=question,
+            candidates=merged_candidates,
+            query_agreement_counts=agreement_counts,
+            top_k=5,
+        )
+
+        # 4. Calibrated Evidence Gate
         if not chunks or not self._has_sufficient_evidence(chunks[0]):
             return LegalResponse(
                 status=AnswerStatus.INSUFFICIENT_EVIDENCE,

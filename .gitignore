@@ -15,6 +15,7 @@ venv/
 
 # Vector DB
 backend/data/chroma_db/
+backend/data/processed/chroma_db/
 
 # IDE
 .idea/
