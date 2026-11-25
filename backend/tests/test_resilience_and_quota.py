@@ -126,3 +126,11 @@ def test_quota_endpoint_exposes_stats_without_secrets():
     serialized = str(body)
     assert "AIza" not in serialized
     assert "gsk_" not in serialized
+
+
+def test_cross_encoder_skipped_on_render_low_memory(monkeypatch):
+    from app.retrieval.reranker import CrossEncoderReranker
+    monkeypatch.setenv("RENDER", "true")
+    monkeypatch.delenv("USE_CROSS_ENCODER", raising=False)
+    rr = CrossEncoderReranker()
+    assert rr._get_encoder() is None

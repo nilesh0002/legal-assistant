@@ -169,6 +169,12 @@ class CrossEncoderReranker(BaseReranker):
         if self._load_attempted:
             return None
         self._load_attempted = True
+        # Skip heavy ONNX cross-encoder on memory-constrained Render free tier (512 MB RAM)
+        if os.getenv("DISABLE_CROSS_ENCODER", "").lower() == "true" or (
+            os.getenv("RENDER", "").lower() == "true"
+            and os.getenv("USE_CROSS_ENCODER", "").lower() != "true"
+        ):
+            return None
         try:
             from fastembed.rerank.cross_encoder import TextCrossEncoder
             # Load from local cache without network calls if already cached
