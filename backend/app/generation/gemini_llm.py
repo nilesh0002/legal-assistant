@@ -29,12 +29,12 @@ class GeminiLLM(BaseLLM):
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-1.5-flash",
+        model_name: Optional[str] = None,
         timeout: float = 30.0,
         max_retries: int = 2,
     ):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = model_name
+        self.model_name = model_name or os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
         self.timeout = timeout
         self.max_retries = max_retries
 

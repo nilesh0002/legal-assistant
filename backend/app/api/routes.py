@@ -14,7 +14,8 @@ from pathlib import Path
 from typing import Optional
 from fastapi import APIRouter, Query
 
-from app.generation.service import AskService
+from app.generation.factory import get_provider_stats
+from app.generation.service import AskService, get_cache_stats
 from app.models.schemas import (
     FeedbackRequest,
     FeedbackResponse,
@@ -57,6 +58,19 @@ async def health_check():
         "status": "healthy",
         "service": "Indian Legal Knowledge Assistant",
         "version": "0.1.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@router.get("/quota")
+async def get_quota_and_cache():
+    """
+    Returns configured LLM providers, fallback counters, latest Groq rate-limit
+    headers (remaining requests/tokens), and /ask cache statistics.
+    """
+    return {
+        "providers": get_provider_stats(),
+        "cache": get_cache_stats(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 

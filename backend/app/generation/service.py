@@ -3,11 +3,13 @@ Full RAG service: Orchestrates query scope detection, hybrid retrieval,
 confidence thresholding, grounded LLM answer generation, and M5 validation.
 """
 
-from typing import List, Optional
+from collections import OrderedDict
+from typing import Dict, List, Optional, Tuple
 import json
 from datetime import datetime, timezone
 from pathlib import Path
 import re
+import time
 
 from app.generation.base import BaseLLM
 from app.generation.factory import get_llm_provider
@@ -17,6 +19,16 @@ from app.retrieval.query_rewriter import QueryRewriter
 from app.retrieval.reranker import CrossEncoderReranker
 from app.retrieval.cross_reference import CrossReferenceResolver
 from app.validation.validator import LegalResponseValidator
+
+_RESPONSE_CACHE: "OrderedDict[Tuple[str, str, int], Tuple[float, LegalResponse]]" = OrderedDict()
+_CACHE_MAX_SIZE = 256
+_CACHE_TTL_SECONDS = 3600
+_CACHE_STATS: Dict[str, int] = {"hits": 0, "misses": 0}
+
+
+def get_cache_stats() -> Dict[str, int]:
+    """Return in-memory /ask response cache statistics."""
+    return {"size": len(_RESPONSE_CACHE), "max_size": _CACHE_MAX_SIZE, **_CACHE_STATS}
 
 # Queries clearly out-of-scope (non-Indian law, sports, cooking, prompt injection)
 OUT_OF_SCOPE_PATTERNS = [
@@ -277,6 +289,21 @@ class AskService:
         # 4. Resolve LLM provider early so real LLM can rewrite queries when available
         llm_instance = self.llm or await get_llm_provider()
 
+        # 4b. Check in-memory LRU TTL cache for single-turn queries
+        cache_key = None
+        if not conversation_history:
+            norm_q = re.sub(r"\s+", " ", question.strip().lower())
+            cache_key = (norm_q, type(llm_instance).__name__, id(self.retriever))
+            cached = _RESPONSE_CACHE.get(cache_key)
+            if cached is not None:
+                cached_at, cached_resp = cached
+                if (time.monotonic() - cached_at) < _CACHE_TTL_SECONDS:
+                    _CACHE_STATS["hits"] += 1
+                    _RESPONSE_CACHE.move_to_end(cache_key)
+                    return cached_resp.model_copy(update={"question": question})
+                del _RESPONSE_CACHE[cache_key]
+            _CACHE_STATS["misses"] += 1
+
         # 5. Query Understanding & Multi-Query Search
         search_queries = await QueryRewriter.rewrite_queries_async(
             question, conversation_history=conversation_history, llm=llm_instance
@@ -497,5 +524,11 @@ class AskService:
             response.last_verified = str(retrieved_date)
         elif not response.last_verified:
             response.last_verified = "2026-11-22"
+
+        if cache_key is not None and response.status == AnswerStatus.ANSWERED:
+            _RESPONSE_CACHE[cache_key] = (time.monotonic(), response.model_copy())
+            _RESPONSE_CACHE.move_to_end(cache_key)
+            while len(_RESPONSE_CACHE) > _CACHE_MAX_SIZE:
+                _RESPONSE_CACHE.popitem(last=False)
 
         return response
