@@ -27,7 +27,7 @@ BENCHMARK_BNS_QUESTIONS = [
 
 OUT_OF_SCOPE_QUESTIONS = [
     "What is the fine for speeding on a state highway?",
-    "How to file a consumer complaint for a defective refrigerator?",
+    "What is the penalty for cyberterrorism under Section 66F of the IT Act?",
     "What is the penalty for driving without a valid motor vehicle registration?",
     "What is the maximum imprisonment for hacking under the IT Act?",
     "What are the rules for adopting a child under the Hindu Adoptions and Maintenance Act?",

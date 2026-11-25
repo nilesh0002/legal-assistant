@@ -199,7 +199,10 @@ function syncMobileSourcesVisibility() {
   const aside = $('sources-aside');
   if (!aside) return;
   const isDesktop = window.innerWidth >= 1024;
-  if (isDesktop) {
+  const isRelatedOnly = appState.currentResponse?.status === 'insufficient_evidence' &&
+    Array.isArray(appState.currentResponse?.related_sources) &&
+    appState.currentResponse.related_sources.length > 0;
+  if (isDesktop || isRelatedOnly) {
     aside.style.display = '';
   } else {
     aside.style.display = appState.sourcesExpanded ? 'flex' : 'none';

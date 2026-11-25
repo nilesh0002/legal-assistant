@@ -174,6 +174,13 @@ BNS_TARGETS = [
     },
     {
         "section": "115",
+        "title": "Voluntarily causing hurt",
+        "chapter": "Chapter VI",
+        "chapter_title": "Offences Affecting the Human Body",
+        "old_equivalent": "Sections 321 and 323 IPC (needs human review)",
+    },
+    {
+        "section": "116",
         "title": "Grievous hurt",
         "chapter": "Chapter VI",
         "chapter_title": "Offences Affecting the Human Body",
@@ -185,6 +192,13 @@ BNS_TARGETS = [
         "chapter": "Chapter VI",
         "chapter_title": "Offences Affecting the Human Body",
         "old_equivalent": "Section 325 IPC (needs human review)",
+    },
+    {
+        "section": "118",
+        "title": "Voluntarily causing hurt or grievous hurt by dangerous weapons or means",
+        "chapter": "Chapter VI",
+        "chapter_title": "Offences Affecting the Human Body",
+        "old_equivalent": "Sections 324 and 326 IPC (needs human review)",
     },
     {
         "section": "126",
@@ -199,6 +213,34 @@ BNS_TARGETS = [
         "chapter": "Chapter VI",
         "chapter_title": "Offences Affecting the Human Body",
         "old_equivalent": "Section 340 IPC (needs human review)",
+    },
+    {
+        "section": "128",
+        "title": "Force",
+        "chapter": "Chapter VI",
+        "chapter_title": "Offences Affecting the Human Body",
+        "old_equivalent": "Section 349 IPC (needs human review)",
+    },
+    {
+        "section": "129",
+        "title": "Criminal force",
+        "chapter": "Chapter VI",
+        "chapter_title": "Offences Affecting the Human Body",
+        "old_equivalent": "Section 350 IPC (needs human review)",
+    },
+    {
+        "section": "130",
+        "title": "Assault",
+        "chapter": "Chapter VI",
+        "chapter_title": "Offences Affecting the Human Body",
+        "old_equivalent": "Section 351 IPC (needs human review)",
+    },
+    {
+        "section": "131",
+        "title": "Punishment for assault or criminal force otherwise than on grave provocation",
+        "chapter": "Chapter VI",
+        "chapter_title": "Offences Affecting the Human Body",
+        "old_equivalent": "Section 352 IPC (needs human review)",
     },
     {
         "section": "137",

@@ -294,8 +294,18 @@ class AskService:
                     all_candidates[cid] = chunk
                     agreement_counts[cid] = 0
                     rrf_scores[cid] = 0.0
+                else:
+                    existing_v = float(all_candidates[cid].metadata.get("vector_score", all_candidates[cid].score or 0.0))
+                    new_v = float(chunk.metadata.get("vector_score", chunk.score or 0.0))
+                    if new_v > existing_v:
+                        all_candidates[cid] = chunk
                 agreement_counts[cid] += 1
                 rrf_scores[cid] += 1.0 / (k + rank + 1)
+
+        # Two-step arrest-for-offence detection ("Can I be arrested for X?")
+        is_arrest_for_offence = bool(
+            re.search(r"\b(?:arrest(?:ed)?|jail|police\s+case)\s+for\b", question, re.IGNORECASE)
+        )
 
         # Multi-query merged candidates
         merged_candidates = sorted(all_candidates.values(), key=lambda c: rrf_scores[c.chunk_id], reverse=True)
@@ -308,9 +318,38 @@ class AskService:
             top_k=5,
         )
 
+        # For two-step "Can I be arrested for X?" queries, prefer the BNS offence chunk as primary
+        # and pair it with BNSS Section 35 (arrest without warrant) so both are retrieved together.
+        if is_arrest_for_offence and chunks:
+            bns_chunks = [c for c in merged_candidates if c.source_id == "bns-2023"]
+            if bns_chunks:
+                bns_reranked = self.reranker.rerank(
+                    query=question,
+                    candidates=bns_chunks,
+                    query_agreement_counts=agreement_counts,
+                    top_k=2,
+                )
+                if bns_reranked and self._has_sufficient_evidence(bns_reranked[0]):
+                    bnss_arrest_results = await self.retriever.search(
+                        query="when police may arrest without warrant Section 35 BNSS",
+                        top_k=3,
+                    )
+                    sec35 = next(
+                        (c for c in bnss_arrest_results if (c.metadata.get("section") or "").lower() == "section 35"),
+                        bnss_arrest_results[0] if bnss_arrest_results else None,
+                    )
+                    combined = [bns_reranked[0]]
+                    if sec35 and sec35.chunk_id != bns_reranked[0].chunk_id:
+                        combined.append(sec35)
+                    for extra in chunks:
+                        if extra.chunk_id not in [x.chunk_id for x in combined] and len(combined) < 5:
+                            combined.append(extra)
+                    chunks = combined
+
         # 7. Calibrated Evidence Gate
         if not chunks or not self._has_sufficient_evidence(chunks[0]):
-            related_sources = [self._to_related_source(c) for c in chunks[:3]] if chunks else []
+            fallback_chunks = chunks[:3] if chunks else await self.retriever.search(query=question, top_k=3)
+            related_sources = [self._to_related_source(c) for c in fallback_chunks[:3]] if fallback_chunks else []
             return LegalResponse(
                 status=AnswerStatus.INSUFFICIENT_EVIDENCE,
                 question=question,

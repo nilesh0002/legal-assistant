@@ -126,6 +126,12 @@
     "source": "Gazette of India Act No. 45 of 2023"
   },
   "BNS Section 115": {
+    "title": "Voluntarily causing hurt",
+    "old_ipc_equivalent": "Sections 321 and 323 IPC (needs human review)",
+    "review_status": "needs human review",
+    "source": "Gazette of India Act No. 45 of 2023"
+  },
+  "BNS Section 116": {
     "title": "Grievous hurt",
     "old_ipc_equivalent": "Section 320 IPC (needs human review)",
     "review_status": "needs human review",
@@ -134,6 +140,12 @@
   "BNS Section 117": {
     "title": "Voluntarily causing grievous hurt",
     "old_ipc_equivalent": "Section 325 IPC (needs human review)",
+    "review_status": "needs human review",
+    "source": "Gazette of India Act No. 45 of 2023"
+  },
+  "BNS Section 118": {
+    "title": "Voluntarily causing hurt or grievous hurt by dangerous weapons or means",
+    "old_ipc_equivalent": "Sections 324 and 326 IPC (needs human review)",
     "review_status": "needs human review",
     "source": "Gazette of India Act No. 45 of 2023"
   },
@@ -146,6 +158,30 @@
   "BNS Section 127": {
     "title": "Wrongful confinement",
     "old_ipc_equivalent": "Section 340 IPC (needs human review)",
+    "review_status": "needs human review",
+    "source": "Gazette of India Act No. 45 of 2023"
+  },
+  "BNS Section 128": {
+    "title": "Force",
+    "old_ipc_equivalent": "Section 349 IPC (needs human review)",
+    "review_status": "needs human review",
+    "source": "Gazette of India Act No. 45 of 2023"
+  },
+  "BNS Section 129": {
+    "title": "Criminal force",
+    "old_ipc_equivalent": "Section 350 IPC (needs human review)",
+    "review_status": "needs human review",
+    "source": "Gazette of India Act No. 45 of 2023"
+  },
+  "BNS Section 130": {
+    "title": "Assault",
+    "old_ipc_equivalent": "Section 351 IPC (needs human review)",
+    "review_status": "needs human review",
+    "source": "Gazette of India Act No. 45 of 2023"
+  },
+  "BNS Section 131": {
+    "title": "Punishment for assault or criminal force otherwise than on grave provocation",
+    "old_ipc_equivalent": "Section 352 IPC (needs human review)",
     "review_status": "needs human review",
     "source": "Gazette of India Act No. 45 of 2023"
   },

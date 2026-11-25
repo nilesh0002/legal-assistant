@@ -60,7 +60,7 @@ LEGAL_CONCEPT_REWRITES = [
         "maximum period for which undertrial prisoner can be detained bail and bonds",
     ),
     (
-        r"\b(?:police\s+beat|torture|handcuff|beating|violence\b|force\b)",
+        r"\b(?:police\s+beat|torture|handcuff|custodial\s+violence|police\s+force)\b",
         "no unnecessary restraint health and safety of arrested person",
         "use handcuff nature and gravity of offence medical examination",
     ),
@@ -83,6 +83,56 @@ LEGAL_CONCEPT_REWRITES = [
         r"(?<!without\s)(?<!without\sa\s)\b(?:warrant|summons|court\s+order)\b",
         "form of summons summons how served form of warrant of arrest and duration",
         "warrant of arrest bailable warrant direction security",
+    ),
+    (
+        r"\b(?:slap(?:ped|ping)?|punch(?:ed|ing)?|hit(?:ting)?|push(?:ed|ing)?|shov(?:e|ed|ing)|beat(?:ing)?|hurt(?:ing)?|assault(?:ed|ing)?|kick(?:ed|ing)?)\b",
+        "hurt voluntarily causing hurt bodily pain criminal force assault",
+        "punishment for assault or criminal force without consent",
+    ),
+    (
+        r"\b(?:weapon|knife|stick|rod|stone|blade|acid|sharp)\b",
+        "voluntarily causing hurt or grievous hurt by dangerous weapons or means",
+        "grievous hurt dangerous weapon punishment",
+    ),
+    (
+        r"\b(?:threat(?:en|ened|ening)?|intimidat(?:e|ed|ing)|scare|blackmail)\b",
+        "criminal intimidation threatens another with injury to person reputation or property",
+        "extortion putting person in fear of injury",
+    ),
+    (
+        r"\b(?:fight(?:ing)?|quarrel|brawl|scuffle|neighbour)\b",
+        "affray two or more persons fighting in a public place disturbing public peace",
+        "voluntarily causing hurt assault criminal force",
+    ),
+    (
+        r"\b(?:steal|stolen|theft|pickpocket|snatch(?:ed|ing)?)\b",
+        "theft intending to take dishonestly movable property out of possession without consent",
+        "robbery snatching extortion",
+    ),
+    (
+        r"\b(?:cheat(?:ed|ing)?|scam(?:med)?|fraud|duped|fake\s+promise)\b",
+        "cheating deceiving fraudulently or dishonestly inducing delivery of property",
+        "criminal breach of trust dishonest misappropriation",
+    ),
+    (
+        r"\b(?:defam(?:e|ed|ing|ation)|rumour|slander|libel|insult)\b",
+        "defamation imputation harming reputation of person",
+        "criminal intimidation insult",
+    ),
+    (
+        r"\b(?:trespass|broke\s+into|broken\s+into|unlawful\s+entry)\b",
+        "criminal trespass house-trespass lurking house-breaking",
+        "offence against property",
+    ),
+    (
+        r"\b(?:defective|faulty|damaged|refund|misleading\s+ad|consumer|shopkeeper|seller)\b",
+        "consumer complaint unfair trade practice product liability manufacturer defect",
+        "District Commission limitation period consumer protection",
+    ),
+    (
+        r"\b(?:rti|right\s+to\s+information|public\s+information\s+officer|pio|government\s+records?)\b",
+        "right to information request disposal thirty days public information officer",
+        "exemption from disclosure penalty on public information officer",
     ),
 ]
 
@@ -157,8 +207,6 @@ class QueryRewriter(BaseQueryRewriter):
             for r in matched_rewrites[:2]:
                 if r not in queries:
                     queries.append(r)
-        else:
-            queries.append(f"{resolved_q} Indian statutory law procedure rights")
 
         return queries
 

@@ -191,8 +191,8 @@ These choices were made to keep moving. Flag if you disagree:
 | M5 | Validators + adversarial tests | Done |
 | M6 | Android chat UI (Compose + Material 3, two-layer answers, local history) | Done |
 | M7 | Old/new law mapping in answers | Next |
-| M8 | Evaluation: 50+ golden questions + report | Pending |
-| M9 | Beta: cloud deployment, production release | Pending |
+| M8 | Evaluation: independent held-out set + report | **In progress, waiting for independent questions** (`dev.yaml` 40q + `heldout_v2.yaml` 40q [seen, no longer clean] complete; `eval/heldout_v3.yaml` template ready for 30 independent questions) |
+| M9 | Beta: cloud deployment, production release | **In progress** (Web deployed on Vercel; Render backend live; pending: set `ALLOWED_ORIGINS` & `GEMINI_API_KEY` on Render, verify Render redeploy of latest commit, sign release AAB/APK per `RELEASE_GUIDE.md`, and complete human legal review) |
 
 ## Non-Negotiable Rules
 
@@ -221,3 +221,4 @@ These choices were made to keep moving. Flag if you disagree:
 - **Security:** All backend strings are rendered strictly via `textContent` (no `innerHTML` with untrusted data); Content-Security-Policy `<meta>` tag enforced (`script-src 'self'`, `style-src 'self'`); `rel="noopener noreferrer"` on external source links; 1,000-character query cap enforced.
 - **Accessibility & Responsive Design:** Light/dark themes (`prefers-color-scheme` + `localStorage` toggle), 44px minimum tap targets, skip link, ARIA live region, print stylesheet, and responsive breakpoints at `390px`, `768px`, and `1280px`.
 - **Guide:** See [WEB_GUIDE.md](WEB_GUIDE.md) for local setup, API URL configuration, Vercel deployment, and production CORS settings.
+- **Render Free-Tier Cold Start Note:** The backend hosted on Render's free tier sleeps after periods of inactivity. The first request after idle sleep can take **about 60 seconds** while the container wakes up (both the web and Android apps display a wake-up/retry notice during cold starts).

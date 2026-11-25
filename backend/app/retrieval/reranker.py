@@ -71,6 +71,9 @@ class HeuristicReranker(BaseReranker):
             distinction_penalty += 0.20
         if "arrest" in q_lower and "trespass" not in q_lower and ("trespass" in title_lower or "breaking" in title_lower):
             distinction_penalty += 0.35
+        if not any(w in q_lower for w in ("woman", "women", "female", "girl", "modesty", "disrobe", "stalk", "voyeur")):
+            if any(w in title_lower for w in ("woman", "modesty", "disrobe")):
+                distinction_penalty += 0.25
 
         q_articles = re.findall(r"\bArticle\s+(\d+[A-Z]?)\b", query, re.IGNORECASE)
         q_sections = re.findall(r"\bSection\s+(\d+[A-Z]?)\b", query, re.IGNORECASE)

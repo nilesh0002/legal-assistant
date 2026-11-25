@@ -1,0 +1,36 @@
+# ==============================================================================
+# NyayaSahayak Independent Evaluation Template — heldout_v3.yaml
+# ==============================================================================
+# PURPOSE:
+#   This file is intentionally EMPTY so an independent reviewer who has NOT seen
+#   the retrieval/reranker code, keyword maps, or dev/heldout_v2 questions can
+#   write 30 fresh, unbiased questions to measure true generalization.
+#
+# INSTRUCTIONS FOR THE INDEPENDENT REVIEWER:
+#   1. Do NOT read backend/app/retrieval/* or eval/dev.yaml before writing these.
+#   2. Write 30 questions total:
+#      - 20 in_scope questions (ordinary lay wording about topics listed in
+#        GET /coverage: Constitution Parts III/IV/IVA, BNSS 2023, BNS 2023,
+#        Consumer Protection Act 2019, RTI Act 2005).
+#      - 10 out_of_scope questions (mix of: non-Indian law, unindexed Indian
+#        statutes like Motor Vehicles Act / Income Tax Act, private-employer
+#        questions, vague 1-2 word queries, and non-legal questions).
+#   3. Run once without tuning:
+#        cd legal-assistant/backend
+#        .venv\Scripts\python ..\eval\run_eval.py --file ..\eval\heldout_v3.yaml
+#
+# SCHEMA EXAMPLE (replace placeholders below; do not copy examples into final set):
+#   in_scope:
+#     - id: h3-in-01
+#       question: "<Your ordinary-language question about an indexed statute>"
+#       expected_source: "<constitution-india | bnss-2023 | bns-2023 | cpa-2019 | rti-2005>"
+#       expected_section: "<Article/Section number if known, or leave blank>"
+#   out_of_scope:
+#     - id: h3-out-01
+#       question: "<Your out-of-scope / unindexed / private-entity / vague question>"
+#       expected_status: "<out_of_scope | not_covered_yet | insufficient_evidence | needs_clarification>"
+# ==============================================================================
+
+in_scope: []
+
+out_of_scope: []

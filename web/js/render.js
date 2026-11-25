@@ -191,10 +191,12 @@ export function renderAnswerView(
   }
   mainCol.appendChild(statusRow);
 
-  // Question bubble (semantic h1 for Answer view)
-  if (response?.question) {
+  // Question bubble (semantic h1 for Answer view; never show status label as question)
+  const displayQuestion = (response?.question || state?.lastQuestion || '').trim();
+  if (displayQuestion) {
     const qBubble = el(doc, 'div', 'question-bubble');
-    qBubble.appendChild(el(doc, 'h1', 'question-bubble-text', response.question));
+    qBubble.appendChild(el(doc, 'p', 'section-kicker', 'Your question'));
+    qBubble.appendChild(el(doc, 'h1', 'question-bubble-text', displayQuestion));
     mainCol.appendChild(qBubble);
   }
 

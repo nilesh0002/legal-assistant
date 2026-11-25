@@ -130,6 +130,57 @@ class LocalGroundedLLM(BaseLLM):
             source_url=source_url,
             location=location or "Reported text",
         )
+        details_list = [detail]
+
+        # Two-step support: if question asks about arrest for an offence and BNSS Section 35 is paired
+        is_arrest_for_offence = bool(
+            re.search(r"\b(?:arrest(?:ed)?|jail|police\s+case)\s+for\b", question, re.IGNORECASE)
+        )
+        if is_arrest_for_offence and source_id == "bns-2023":
+            arrest_chunk = next(
+                (c for c in context_chunks[1:] if c.source_id == "bnss-2023"),
+                None,
+            )
+            if arrest_chunk:
+                a_meta = arrest_chunk.metadata
+                a_prov = (a_meta.get("article") or a_meta.get("section") or "Section 35").strip()
+                a_raw_title = a_meta.get("title", "").strip()
+                a_clean_title = re.sub(r"^(?:Article|Section)\s+[^:]+:\s*", "", a_raw_title).strip().rstrip(".- ")
+                a_body = re.sub(r"^\d+[A-Z]?\.\s+[^—\n]+—\s*", "", arrest_chunk.text.strip()).strip()
+                a_sents = [s.strip() for s in re.split(r"(?<=[.!?])\s+", a_body) if len(s.strip()) > 15]
+                a_quote = " ".join((a_sents[0] if a_sents else a_body).split()).rstrip(".") + "."
+                a_url = a_meta.get("source_url") or "https://egazette.gov.in/WriteReadData/2023/250884.pdf"
+                a_law = a_meta.get("law", "Bharatiya Nagarik Suraksha Sanhita, 2023").strip()
+
+                details_list.append(
+                    SourceDetail(
+                        claim=f"{a_prov} sets general rules for arrest without warrant",
+                        law=a_law,
+                        section=a_prov,
+                        old_equivalent=a_meta.get("old_equivalent") or None,
+                        quote=a_quote,
+                        source_id=arrest_chunk.source_id,
+                        source_title=a_raw_title or f"{a_prov}: {a_clean_title}",
+                        source_url=a_url,
+                        location=a_meta.get("location", "Reported text"),
+                    )
+                )
+
+                simple_summary += (
+                    f" Note on arrest: The indexed text of {provision} does not state its cognizable/bailable "
+                    f"classification. As general arrest procedure under {a_prov} ({a_clean_title}) of the {a_law}, "
+                    f"\"{a_quote}\""
+                )
+                detailed_summary += (
+                    f" Regarding arrest, the indexed text of {provision} does not include the First Schedule "
+                    f"classification (cognizable/bailable). Under {a_prov} of the {a_law}: \"{a_quote}\""
+                )
+                key_points.append(
+                    f"Classification notice: The indexed text of {provision} does not state whether it is cognizable or bailable."
+                )
+                key_points.append(
+                    f"General arrest rule ({a_prov}, {a_law}): {a_quote}"
+                )
 
         # Determine last_verified date strictly from approved sources.yaml record
         sources_map = load_approved_sources()
@@ -144,7 +195,7 @@ class LocalGroundedLLM(BaseLLM):
                 detailed=detailed_summary,
             ),
             key_points=key_points,
-            details=[detail],
+            details=details_list,
             related_judgments=[],
             last_verified=last_verified,
             disclaimer="General information, not legal advice.",
