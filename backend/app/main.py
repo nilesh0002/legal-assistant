@@ -13,9 +13,8 @@ import time
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
-from fastapi.staticfiles import StaticFiles
 from app.api.routes import router
 from app.retrieval.chroma_retriever import ChromaRetriever
 
@@ -136,10 +135,9 @@ async def rate_limit_middleware(request: Request, call_next):
 
 app.include_router(router)
 
-# Mount Web frontend
-web_dir = Path(__file__).resolve().parent.parent / "web"
-if not web_dir.exists():
-    web_dir = Path(__file__).resolve().parent.parent.parent / "web"
 
-if web_dir.exists():
-    app.mount("/", StaticFiles(directory=str(web_dir), html=True), name="web")
+@app.get("/", include_in_schema=False)
+async def root_redirect():
+    """Redirect browser visitors on the API root to the live Vercel Stitch web app."""
+    frontend_url = os.getenv("FRONTEND_URL", "https://legal-assistant-web-rho.vercel.app").strip()
+    return RedirectResponse(url=frontend_url, status_code=307)

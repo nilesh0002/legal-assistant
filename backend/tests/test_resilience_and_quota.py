@@ -134,3 +134,10 @@ def test_cross_encoder_skipped_on_render_low_memory(monkeypatch):
     monkeypatch.delenv("USE_CROSS_ENCODER", raising=False)
     rr = CrossEncoderReranker()
     assert rr._get_encoder() is None
+
+
+def test_root_redirects_to_vercel_frontend():
+    client = TestClient(app)
+    resp = client.get("/", follow_redirects=False)
+    assert resp.status_code == 307
+    assert resp.headers["location"] == "https://legal-assistant-web-rho.vercel.app"
