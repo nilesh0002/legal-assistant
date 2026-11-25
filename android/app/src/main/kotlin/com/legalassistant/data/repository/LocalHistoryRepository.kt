@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Repository for storing and retrieving user chat sessions locally on-device.
+ * Repository for storing and retrieving user chat sessions and app preferences locally on-device.
  * Zero telemetry, zero accounts, completely private.
  */
 class LocalHistoryRepository(context: Context) {
 
-    private val prefs = context.getSharedPreferences("legal_assistant_history", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("legal_assistant_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
     private val _history = MutableStateFlow<List<ChatHistoryItem>>(emptyList())
@@ -23,6 +23,22 @@ class LocalHistoryRepository(context: Context) {
 
     init {
         loadHistory()
+    }
+
+    fun hasAcceptedDisclaimer(): Boolean {
+        return prefs.getBoolean("has_accepted_disclaimer", false)
+    }
+
+    fun setDisclaimerAccepted(accepted: Boolean) {
+        prefs.edit().putBoolean("has_accepted_disclaimer", accepted).apply()
+    }
+
+    fun getSavedBaseUrl(): String? {
+        return prefs.getString("custom_base_url", null)
+    }
+
+    fun saveBaseUrl(url: String) {
+        prefs.edit().putString("custom_base_url", url).apply()
     }
 
     private fun loadHistory() {

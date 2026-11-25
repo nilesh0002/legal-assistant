@@ -2,587 +2,433 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>NyayaSahayak — Indian Legal Knowledge Assistant</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    .legal-quote { font-family: 'Merriweather', serif; }
-    /* Touch target optimizations for mobile phones */
-    button, input, a { touch-action: manipulation; }
-    .touch-target { min-height: 44px; }
-  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 28%22><rect x=%223%22 y=%224%22 width=%2210%22 height=%2220%22 rx=%222%22 fill=%22none%22 stroke=%22%231B2A49%22 stroke-width=%222%22/><rect x=%2215%22 y=%224%22 width=%2210%22 height=%2220%22 rx=%222%22 fill=%22none%22 stroke=%22%231B2A49%22 stroke-width=%222%22/><line x1=%226%22 y1=%229%22 x2=%2210%22 y2=%229%22 stroke=%22%23E0A030%22 stroke-width=%222%22/></svg>">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- Header -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md shrink-0">
-          ⚖️
+  <!-- Top Bar -->
+  <header class="site-header">
+    <div class="header-inner">
+      <button type="button" class="brand-link" data-nav="home" aria-label="NyayaSahayak Home">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect x="3" y="4" width="10" height="20" rx="2" stroke="currentColor" stroke-width="2"></rect>
+          <rect x="15" y="4" width="10" height="20" rx="2" stroke="currentColor" stroke-width="2"></rect>
+          <line x1="6" y1="9" x2="10" y2="9" stroke="#E0A030" stroke-width="2" stroke-linecap="round"></line>
+          <line x1="18" y1="9" x2="22" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></line>
+          <line x1="18" y1="13" x2="22" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></line>
+        </svg>
+        <span>NyayaSahayak</span>
+      </button>
+
+      <nav aria-label="Primary navigation" class="primary-nav">
+        <button type="button" class="nav-btn" data-nav="home" aria-current="page">Ask</button>
+        <button type="button" class="nav-btn" data-nav="history">History</button>
+        <button type="button" class="nav-btn" data-nav="coverage">Coverage</button>
+        <button type="button" class="nav-btn" data-nav="about">About</button>
+      </nav>
+
+      <div class="header-actions">
+        <div id="backend-status" class="status-dot-pill" title="Backend connection status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="backend-status-text">Checking...</span>
         </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">NyayaSahayak</h1>
-          <p class="text-[11px] sm:text-xs text-slate-500 font-medium">Official Indian Legal Knowledge</p>
+
+        <div class="lang-pill" aria-label="Language status">
+          <span class="lang-active">English</span>
+          <span aria-hidden="true">|</span>
+          <span class="lang-muted">Hindi soon</span>
         </div>
+
+        <button id="btn-theme-toggle" type="button" class="btn-icon" aria-label="Toggle dark theme" aria-pressed="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>
+          </svg>
+        </button>
+
+        <button id="btn-mobile-menu" type="button" class="btn-icon mobile-only" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu-drawer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          </svg>
+        </button>
       </div>
-      
-      <div class="flex items-center space-x-1.5 sm:space-x-3">
-        <!-- Live Connection Badge -->
-        <div id="backend-status" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-          <span id="backend-status-text">Connecting...</span>
-        </div>
+    </div>
 
-        <!-- Coverage Button -->
-        <button id="btn-coverage" class="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition" title="View Indexed Corpus Coverage">
-          <span>📚</span>
-          <span class="hidden sm:inline">Coverage</span>
-        </button>
+    <nav id="mobile-menu-drawer" aria-label="Mobile navigation" class="mobile-menu-drawer mobile-only" hidden>
+      <button type="button" class="nav-btn" data-nav="home" aria-current="page">Ask</button>
+      <button type="button" class="nav-btn" data-nav="history">History</button>
+      <button type="button" class="nav-btn" data-nav="coverage">Coverage</button>
+      <button type="button" class="nav-btn" data-nav="about">About</button>
+    </nav>
 
-        <!-- Android APK Download Button -->
-        <a href="https://github.com/nilesh0002/legal-assistant/releases/latest" target="_blank" class="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition" title="Download Android App">
-          <span>📱</span>
-          <span class="hidden xs:inline">App</span>
-        </a>
-
-        <!-- Settings Cog -->
-        <button id="btn-settings" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition" title="API Settings">
-          ⚙️
-        </button>
+    <!-- Persistent Beta Strip (inside banner landmark) -->
+    <div class="beta-strip" role="note" aria-label="Beta notice">
+      <div class="beta-strip-inner">
+        <span class="beta-dot" aria-hidden="true"></span>
+        <span>Beta: General information, not legal advice</span>
       </div>
     </div>
   </header>
 
-  <!-- Coverage Modal -->
-  <div id="modal-coverage" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4 hidden backdrop-blur-xs">
-    <div class="bg-white rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+  <!-- Main Content -->
+  <main id="main-content" class="main-container" tabindex="-1">
+
+    <!-- VIEW 1: HOME -->
+    <section id="view-home" class="narrow-container">
+      <div class="hero-section">
         <div>
-          <h3 class="text-base sm:text-lg font-bold text-slate-900">Official Corpus Coverage</h3>
-          <p class="text-xs text-slate-500">Only verified statutes published by Government of India are indexed</p>
+          <h1 class="hero-title">Understand your rights, from official sources</h1>
+          <p class="hero-subtitle">
+            Plain-language answers grounded only in verified Indian statutes and the Constitution, with exact quotes shown beside every point.
+          </p>
         </div>
-        <button id="btn-coverage-close" class="text-slate-400 hover:text-slate-600 text-2xl font-light">&times;</button>
-      </div>
-      <div id="coverage-content" class="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs">
-        <div class="text-slate-500 text-center py-4">Loading indexed laws and sections...</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Settings Modal -->
-  <div id="modal-settings" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-base sm:text-lg font-bold text-slate-900">Backend Server Settings</h3>
-        <button id="btn-settings-close-x" class="text-slate-400 hover:text-slate-600 text-2xl font-light">&times;</button>
-      </div>
-      <p class="text-xs text-slate-600">The mobile web client connects to the live backend server hosted on Render:</p>
-      <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">API Base URL</label>
-        <input type="text" id="input-base-url" class="w-full px-3 py-2 border rounded-lg text-xs sm:text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none" value="https://legal-assistant-1qgm.onrender.com">
-      </div>
-      <div class="flex justify-end space-x-2 pt-2">
-        <button id="btn-settings-cancel" class="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-        <button id="btn-settings-save" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Save & Reconnect</button>
-      </div>
-    </div>
-  </div>
+        <form id="ask-form-home" class="search-form" role="search">
+          <div class="search-bar-box">
+            <label for="ask-input-home" class="sr-only">Ask about your rights or a law</label>
+            <input
+              id="ask-input-home"
+              class="search-input"
+              type="search"
+              maxlength="1000"
+              placeholder="Ask about your rights or a law"
+              autocomplete="off"
+            >
+            <button type="submit" class="btn btn-primary" aria-label="Ask question">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+              <span>Ask</span>
+            </button>
+          </div>
+          <div class="search-meta-row">
+            <span>Strictly grounded in official statutes — never speculated.</span>
+            <span id="char-count">0 / 1000</span>
+          </div>
+        </form>
 
-  <!-- Main Container -->
-  <main class="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1 w-full flex flex-col space-y-4 sm:space-y-6">
-
-    <!-- Mandatory Disclaimer Banner -->
-    <div class="bg-amber-50/90 border border-amber-200 rounded-xl p-3 flex items-start space-x-2.5 text-xs text-amber-900">
-      <span class="text-base leading-none shrink-0 mt-0.5">⚠️</span>
-      <div class="leading-relaxed">
-        <strong>General information, not legal advice:</strong> All answers are strictly grounded in official Government of India statutes (Constitution of India, BNSS 2023, and BNS 2023). For legal proceedings or representation, consult an enrolled advocate.
+        <div class="chips-group">
+          <p class="section-kicker">Try an example question</p>
+          <div id="example-chips" class="chips-wrap"></div>
+        </div>
       </div>
-    </div>
 
-    <!-- Search / Ask Section -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-xs space-y-3">
-      <form id="ask-form" class="flex flex-col sm:flex-row gap-2">
-        <div class="relative flex-1">
-          <input 
-            type="text" 
-            id="question-input" 
-            placeholder="Ask e.g. when can police arrest without warrant, bail procedure, Article 21..." 
-            class="w-full pl-3.5 pr-8 py-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50/50"
-            required
-            autocomplete="off"
+      <!-- How NyayaSahayak Works -->
+      <section aria-labelledby="how-it-works-heading">
+        <h2 id="how-it-works-heading" class="section-heading">How NyayaSahayak works</h2>
+        <div class="explainer-grid">
+          <div class="card explainer-card">
+            <svg class="explainer-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z"/>
+            </svg>
+            <div>
+              <h3 class="card-title-md">We find the official text</h3>
+              <p class="card-body-sm">Every search looks up published central statutes and the Constitution of India.</p>
+            </div>
+          </div>
+
+          <div class="card explainer-card">
+            <svg class="explainer-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
+            </svg>
+            <div>
+              <h3 class="card-title-md">We explain it from that text only</h3>
+              <p class="card-body-sm">Answers are written in plain language strictly from the retrieved sections—never guessed.</p>
+            </div>
+          </div>
+
+          <div class="card explainer-card">
+            <svg class="explainer-icon verified" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+            </svg>
+            <div>
+              <h3 class="card-title-md">We check every quote</h3>
+              <p class="card-body-sm">Exact statutory wording and official source links appear beside every point.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Topics -->
+      <section aria-labelledby="topics-heading">
+        <h2 id="topics-heading" class="section-heading">Explore indexed legal areas</h2>
+        <div class="topics-grid">
+          <button type="button" class="card topic-card" data-topic-query="What does Article 21 protect?">
+            <div>
+              <h3 class="card-title-md">Constitution of India</h3>
+              <p class="card-body-sm">Fundamental Rights, Directive Principles, Duties</p>
+            </div>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="card topic-card" data-topic-query="When can police arrest without warrant under BNSS?">
+            <div>
+              <h3 class="card-title-md">Police &amp; Bail (BNSS, 2023)</h3>
+              <p class="card-body-sm">Arrest procedures, detention limits, bail</p>
+            </div>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="card topic-card" data-topic-query="What is the time limit to reply to an RTI?">
+            <div>
+              <h3 class="card-title-md">Right to Information (RTI, 2005)</h3>
+              <p class="card-body-sm">Filing requests, 30-day timeline, exemptions</p>
+            </div>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button type="button" class="card topic-card" data-topic-query="How to complain about a faulty product under CPA?">
+            <div>
+              <h3 class="card-title-md">Consumer Protection (CPA, 2019)</h3>
+              <p class="card-body-sm">Consumer rights, commissions, product liability</p>
+            </div>
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <!-- VIEW 2: ANSWER & SOURCES -->
+    <section id="view-answer" hidden>
+      <!-- Print-only Header -->
+      <div class="print-only-header">
+        <h1>NyayaSahayak — Official Legal Reference</h1>
+        <p id="print-date"></p>
+      </div>
+
+      <!-- Loading & Wake-up State -->
+      <div id="answer-loading" hidden>
+        <div class="answer-layout">
+          <div class="answer-main-col">
+            <div id="wakeup-banner" class="wakeup-banner" hidden>
+              <p class="card-title-md">The server is waking up, this can take up to a minute</p>
+              <p class="card-body-sm">NyayaSahayak runs on a public free-tier server that sleeps when idle. Thank you for your patience.</p>
+              <div>
+                <button id="btn-cancel-request" type="button" class="btn btn-secondary">Cancel</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="skeleton-bar skel-h24-w45"></div>
+              <div class="skeleton-bar skel-h16-w95"></div>
+              <div class="skeleton-bar skel-h16-w88"></div>
+              <div class="skeleton-bar skel-h16-w70"></div>
+            </div>
+          </div>
+          <aside class="sources-aside" aria-hidden="true">
+            <div class="card">
+              <div class="skeleton-bar skel-h20-w55"></div>
+              <div class="skeleton-bar skel-h64-w100"></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- Answer Results Grid -->
+      <div id="answer-results-grid" class="answer-layout" hidden>
+        <div id="answer-main-col" class="answer-main-col"></div>
+        <aside id="sources-aside" class="sources-aside" aria-label="Official sources"></aside>
+      </div>
+
+      <!-- Follow-up Bar -->
+      <div id="followup-box" class="followup-box followup-container" hidden>
+        <form id="followup-form" class="search-bar-box" role="search">
+          <label for="followup-input" class="sr-only">Ask a follow-up question</label>
+          <input
+            id="followup-input"
+            class="search-input"
+            type="search"
+            maxlength="1000"
+            placeholder="Ask a follow-up question (uses previous 2 turns)..."
           >
-          <button type="button" id="clear-input-btn" class="hidden absolute right-2.5 top-3 text-slate-400 hover:text-slate-600 text-sm">✕</button>
-        </div>
-        <button 
-          type="submit" 
-          id="ask-button"
-          class="px-5 py-3 bg-indigo-600 active:bg-indigo-800 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center space-x-2 shadow-xs shrink-0 disabled:opacity-50 touch-target"
-        >
-          <span>Ask Assistant</span>
-          <span id="ask-spinner" class="hidden animate-spin">⏳</span>
-        </button>
-      </form>
+          <button type="submit" class="btn btn-primary">Ask</button>
+        </form>
+      </div>
 
-      <!-- Suggested Question Chips -->
-      <div class="pt-1">
-        <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-          <span>Common Legal Questions:</span>
-          <span class="text-[10px] text-indigo-600 cursor-pointer hover:underline" id="refresh-examples">Tap to ask</span>
+      <!-- Print-only Footer -->
+      <div class="print-only-footer print-footer-box">
+        <p><strong>Disclaimer:</strong> General information, not legal advice. Grounded strictly in verified Government of India publications (Beta).</p>
+      </div>
+    </section>
+
+    <!-- VIEW 3: HISTORY -->
+    <section id="view-history" class="narrow-container" hidden>
+      <div class="status-row">
+        <div>
+          <h1 class="hero-title">History</h1>
+          <p class="card-body-sm">Stored only in this browser — never sent to an account or cloud profile.</p>
         </div>
-        <div id="example-chips" class="flex flex-wrap gap-1.5 items-center">
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">When can police arrest without warrant?</button>
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Procedure for bail under BNSS Section 478?</button>
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">What does Article 21 protect?</button>
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Can women be arrested at night?</button>
-          <button class="chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left">Right of private defence of body under BNS?</button>
+        <button id="btn-clear-history" type="button" class="btn btn-danger-outline" hidden>Clear all</button>
+      </div>
+
+      <p id="history-empty" class="card card-body-sm">No questions saved yet. Questions you ask will appear here locally.</p>
+      <ul id="history-list" class="list-stack reset-list"></ul>
+    </section>
+
+    <!-- VIEW 4: COVERAGE -->
+    <section id="view-coverage" class="narrow-container" hidden>
+      <div>
+        <h1 class="hero-title">Covered Statutes</h1>
+        <p id="coverage-note-text" class="card-body-sm">Selected sections only. Only the listed sections from official Government of India sources are indexed.</p>
+      </div>
+
+      <div class="search-bar-box">
+        <label for="coverage-filter" class="sr-only">Filter indexed laws and sections</label>
+        <input id="coverage-filter" class="search-input" type="search" placeholder="Filter by law, section number, or keyword (e.g. Bail, Article 21)...">
+      </div>
+
+      <div id="coverage-loading" class="card" hidden>
+        <p class="card-body-sm">Loading indexed laws and selected sections...</p>
+      </div>
+
+      <div id="coverage-error" class="card" hidden>
+        <p id="coverage-error-text" class="card-body-sm"></p>
+        <div class="mt-md">
+          <button id="btn-coverage-retry" type="button" class="btn btn-primary">Try again</button>
         </div>
       </div>
-    </div>
 
-    <!-- Results Section -->
-    <div id="results-area" class="space-y-4"></div>
+      <div id="coverage-list" class="list-stack"></div>
+    </section>
 
+    <!-- VIEW 5: ABOUT & SETTINGS -->
+    <section id="view-about" class="narrow-container" hidden>
+      <h1 class="hero-title">About &amp; Settings</h1>
+
+      <section class="card">
+        <h2 class="section-heading">Reading preferences</h2>
+        <div class="status-row pref-row-top">
+          <div>
+            <p class="card-title-md">Theme</p>
+            <p class="card-body-sm">Switch between light paper and dark reading mode</p>
+          </div>
+          <div role="group" aria-label="Theme" class="segmented-group">
+            <button id="btn-pref-light" type="button" class="segmented-btn" aria-pressed="true">Light</button>
+            <button id="btn-pref-dark" type="button" class="segmented-btn" aria-pressed="false">Dark</button>
+          </div>
+        </div>
+
+        <div class="status-row pref-row-bottom">
+          <div>
+            <p class="card-title-md">Text size</p>
+            <p class="card-body-sm">Supports up to 200% browser zoom</p>
+          </div>
+          <div role="group" aria-label="Text size" class="segmented-group">
+            <button id="btn-size-standard" type="button" class="segmented-btn" aria-pressed="true">Standard</button>
+            <button id="btn-size-large" type="button" class="segmented-btn" aria-pressed="false">Large</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-heading">Backend API configuration</h2>
+        <p class="card-body-sm mb-md">Production deployments require HTTPS. Local development permits localhost.</p>
+        <div class="stack-sm">
+          <label for="input-api-url" class="section-kicker">API Base URL</label>
+          <input id="input-api-url" type="url" class="text-input-field">
+          <p id="api-url-error" class="card-body-sm text-error" hidden></p>
+          <div>
+            <button id="btn-save-api-url" type="button" class="btn btn-primary">Save &amp; reconnect</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="section-heading">How answers are made</h2>
+        <p class="card-body-sm">
+          When you ask a question, NyayaSahayak searches only our verified library of official Indian government texts. If the answer is not clearly supported by those texts, it refuses rather than guessing. Every claim is paired with the exact statutory quote and a link to the official source.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2 class="section-heading">Official sources</h2>
+        <ul class="keypoints-list">
+          <li>• India Code (indiacode.nic.in) — Central Acts &amp; Sanhitas</li>
+          <li>• Legislative Department, Ministry of Law &amp; Justice — Constitution of India</li>
+          <li>• Gazette of India (egazette.gov.in) — Official notifications</li>
+          <li>• Department of Personnel &amp; Training — RTI Act resources</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2 class="section-heading">Disclaimer &amp; feedback</h2>
+        <p class="card-body-sm mb-lg">
+          NyayaSahayak provides general legal information for educational and civic awareness purposes only. It does not constitute legal advice and does not create an advocate-client relationship.
+        </p>
+        <button id="btn-open-feedback-about" type="button" class="btn btn-secondary">Send feedback</button>
+      </section>
+    </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
-    <div class="max-w-4xl mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
-      <p class="font-medium text-slate-700">NyayaSahayak — Grounded Indian Legal Knowledge System</p>
-      <p class="text-[11px] text-slate-400">Sources: Constitution of India, BNSS 2023 & BNS 2023 (Official Gazettes)</p>
-      <div class="pt-1 flex items-center justify-center space-x-3 text-[11px] text-indigo-600">
-        <a href="https://github.com/nilesh0002/legal-assistant" target="_blank" class="hover:underline">GitHub</a>
-        <span>•</span>
-        <a href="https://github.com/nilesh0002/legal-assistant/releases" target="_blank" class="hover:underline font-semibold">Download Android App</a>
-      </div>
-    </div>
+  <footer class="site-footer">
+    <p>NyayaSahayak — Grounded Indian Legal Knowledge System · General information, not legal advice.</p>
   </footer>
 
-  <!-- Client-Side App Logic -->
-  <script>
-    const DEFAULT_BASE_URL = "https://legal-assistant-1qgm.onrender.com";
-    let BASE_URL = localStorage.getItem("nyaya_base_url") || DEFAULT_BASE_URL;
+  <!-- First-Visit Disclaimer Modal -->
+  <div id="modal-disclaimer" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title" hidden>
+    <div class="modal-panel">
+      <div>
+        <h2 id="disclaimer-title" class="section-heading">Before you begin</h2>
+        <p class="card-body-sm">Please read how NyayaSahayak works</p>
+      </div>
+      <ul class="keypoints-list">
+        <li><strong>General information only:</strong> NyayaSahayak explains Indian laws in plain language. It is not a lawyer and does not give legal advice.</li>
+        <li><strong>Official sources only:</strong> Every answer is drawn strictly from published government statutes and the Constitution, with exact quotes shown.</li>
+        <li><strong>Selected coverage (Beta):</strong> Only selected central laws are covered right now. Always verify with the linked official source or a qualified advocate.</li>
+      </ul>
+      <div class="modal-actions">
+        <button id="btn-disclaimer-accept" type="button" class="btn btn-primary">I understand</button>
+      </div>
+    </div>
+  </div>
 
-    const backendStatusEl = document.getElementById("backend-status");
-    const backendStatusText = document.getElementById("backend-status-text");
-    const questionInput = document.getElementById("question-input");
-    const clearInputBtn = document.getElementById("clear-input-btn");
-    const askForm = document.getElementById("ask-form");
-    const askButton = document.getElementById("ask-button");
-    const askSpinner = document.getElementById("ask-spinner");
-    const resultsArea = document.getElementById("results-area");
-    const exampleChipsContainer = document.getElementById("example-chips");
-
-    // Clear input button toggle
-    questionInput.addEventListener("input", () => {
-      clearInputBtn.classList.toggle("hidden", !questionInput.value.trim());
-    });
-    clearInputBtn.onclick = () => {
-      questionInput.value = "";
-      clearInputBtn.classList.add("hidden");
-      questionInput.focus();
-    };
-
-    // Check Backend Health
-    async function checkHealth() {
-      backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200";
-      backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
-      backendStatusText.textContent = "Connecting...";
-
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(`${BASE_URL}/health`, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200";
-          backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-emerald-500";
-          backendStatusText.textContent = "Live";
-          loadDynamicExamples();
-        } else {
-          throw new Error("Non-200 response");
-        }
-      } catch (err) {
-        backendStatusEl.className = "flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200";
-        backendStatusEl.children[0].className = "w-2 h-2 rounded-full bg-rose-500";
-        backendStatusText.textContent = "Waking Up";
-      }
-    }
-
-    // Load Dynamic Example Questions from GET /examples
-    async function loadDynamicExamples() {
-      try {
-        const res = await fetch(`${BASE_URL}/examples`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.examples && data.examples.length) {
-          exampleChipsContainer.innerHTML = "";
-          data.examples.slice(0, 7).forEach(ex => {
-            const btn = document.createElement("button");
-            btn.className = "chip text-xs bg-slate-100 active:bg-indigo-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition text-left";
-            btn.textContent = ex;
-            btn.onclick = () => submitQuestion(ex);
-            exampleChipsContainer.appendChild(btn);
-          });
-        }
-      } catch (e) {}
-    }
-
-    checkHealth();
-    setInterval(checkHealth, 30000);
-
-    // Settings Modal
-    document.getElementById("btn-settings").onclick = () => {
-      document.getElementById("input-base-url").value = BASE_URL;
-      document.getElementById("modal-settings").classList.remove("hidden");
-    };
-    document.getElementById("btn-settings-cancel").onclick = () => {
-      document.getElementById("modal-settings").classList.add("hidden");
-    };
-    document.getElementById("btn-settings-close-x").onclick = () => {
-      document.getElementById("modal-settings").classList.add("hidden");
-    };
-    document.getElementById("btn-settings-save").onclick = () => {
-      const newUrl = document.getElementById("input-base-url").value.trim().replace(/\/$/, "");
-      if (newUrl) {
-        BASE_URL = newUrl;
-        localStorage.setItem("nyaya_base_url", BASE_URL);
-        document.getElementById("modal-settings").classList.add("hidden");
-        checkHealth();
-      }
-    };
-
-    // Coverage Modal
-    const modalCoverage = document.getElementById("modal-coverage");
-    document.getElementById("btn-coverage").onclick = async () => {
-      modalCoverage.classList.remove("hidden");
-      const content = document.getElementById("coverage-content");
-      content.innerHTML = "<div class='text-slate-500 text-center py-4'>Loading indexed statutes...</div>";
-      try {
-        const res = await fetch(`${BASE_URL}/coverage`);
-        const data = await res.json();
-        let html = `
-          <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 mb-3">
-            <span class="font-bold text-indigo-900">Total Statutory Chunks Indexed: ${data.total_chunks || 142}</span>
-            <p class="text-[11px] text-indigo-700 mt-0.5">Strictly parsed with sub-clauses, provisos, and explanations preserved.</p>
-          </div>
-        `;
-        if (data.laws) {
-          data.laws.forEach(l => {
-            html += `
-              <div class="border border-slate-200 rounded-xl p-3 bg-white space-y-2">
-                <div class="flex items-center justify-between">
-                  <h4 class="font-bold text-slate-900">${escapeHtml(l.law)}</h4>
-                  <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">${l.sections.length} provisions</span>
-                </div>
-                <div class="text-[11px] text-slate-400">Verified: ${escapeHtml(l.last_verified || "")}</div>
-                <div class="flex flex-wrap gap-1 max-h-32 overflow-y-auto pt-1">
-                  ${l.sections.map(s => `<span class="bg-slate-100 text-slate-700 text-[10px] px-1.5 py-0.5 rounded" title="${escapeHtml(s.title)}">${escapeHtml(s.section)}</span>`).join("")}
-                </div>
-              </div>
-            `;
-          });
-        }
-        content.innerHTML = html;
-      } catch (e) {
-        content.innerHTML = `<div class='text-rose-600'>Failed to load coverage: ${escapeHtml(e.message)}</div>`;
-      }
-    };
-    document.getElementById("btn-coverage-close").onclick = () => {
-      modalCoverage.classList.add("hidden");
-    };
-
-    // Chip Click Handlers
-    function submitQuestion(text) {
-      questionInput.value = text;
-      clearInputBtn.classList.remove("hidden");
-      askForm.dispatchEvent(new Event("submit"));
-    }
-
-    document.querySelectorAll(".chip").forEach(chip => {
-      chip.onclick = () => submitQuestion(chip.textContent);
-    });
-
-    // Ask Handler
-    askForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const query = questionInput.value.trim();
-      if (!query) return;
-
-      askButton.disabled = true;
-      askSpinner.classList.remove("hidden");
-
-      // Add loading card
-      const loadCard = document.createElement("div");
-      loadCard.className = "bg-white rounded-2xl border border-indigo-100 p-4 sm:p-5 shadow-xs space-y-3";
-      loadCard.innerHTML = `
-        <div class="flex items-center space-x-3">
-          <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm animate-spin">⚖️</div>
-          <div>
-            <h4 class="text-sm font-semibold text-slate-800">Searching Indian Legal Statutes & Corpus...</h4>
-            <p class="text-xs text-slate-500">Cross-verifying official provisions (Constitution, BNSS 2023, BNS 2023)</p>
-          </div>
-        </div>
-        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-          <div class="bg-indigo-600 h-full w-2/3 animate-pulse"></div>
-        </div>
-      `;
-      resultsArea.prepend(loadCard);
-
-      try {
-        const res = await fetch(`${BASE_URL}/ask`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: query })
-        });
-        const data = await res.json();
-        loadCard.remove();
-        renderAnswer(data, query);
-      } catch (err) {
-        loadCard.remove();
-        renderError(err.message, query);
-      } finally {
-        askButton.disabled = false;
-        askSpinner.classList.add("hidden");
-      }
-    };
-
-    function renderAnswer(data, question) {
-      const card = document.createElement("div");
-      card.className = "bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4";
-      const cardId = "card-" + Date.now();
-
-      // 1. Needs Clarification Status (With tapable option chips)
-      if (data.status === "needs_clarification") {
-        card.innerHTML = `
-          <div class="border-l-4 border-amber-500 pl-3.5 py-1 space-y-2">
-            <h3 class="font-bold text-amber-800 text-sm">Clarification Needed</h3>
-            <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(data.clarification_question || "Your question is too broad. Please pick a specific option:")}</p>
-            ${data.clarification_options && data.clarification_options.length ? `
-              <div class="flex flex-wrap gap-2 pt-1">
-                ${data.clarification_options.map(opt => `
-                  <button onclick="submitQuestion('${escapeHtml(opt)}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-semibold transition">
-                    👉 ${escapeHtml(opt)}
-                  </button>
-                `).join("")}
-              </div>
-            ` : ""}
-          </div>
-        `;
-        resultsArea.prepend(card);
-        return;
-      }
-
-      // 2. Not Covered Yet Status
-      if (data.status === "not_covered_yet") {
-        card.innerHTML = `
-          <div class="border-l-4 border-amber-500 pl-3.5 py-1 space-y-1.5">
-            <h3 class="font-bold text-amber-800 text-sm">Topic Not Yet Covered (${escapeHtml(data.uncovered_area || "Specific Law")})</h3>
-            <p class="text-xs text-slate-700 leading-relaxed">
-              This topic relates to <strong>${escapeHtml(data.uncovered_area || "an unindexed area of law")}</strong>. 
-              The official statute for this area is not yet indexed in NyayaSahayak. To ensure 100% source fidelity, the system does not speculate.
-            </p>
-            <p class="text-[11px] text-slate-500">Currently indexed laws: Constitution of India, Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023, and Bharatiya Nyaya Sanhita (BNS) 2023.</p>
-          </div>
-        `;
-        resultsArea.prepend(card);
-        return;
-      }
-
-      // 3. Out of Scope Status
-      if (data.status === "out_of_scope") {
-        card.innerHTML = `
-          <div class="border-l-4 border-slate-400 pl-3.5 py-1 space-y-1.5">
-            <h3 class="font-bold text-slate-800 text-sm">Question Outside Legal Scope</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              NyayaSahayak is dedicated exclusively to official Indian statutory law. Questions regarding cooking recipes, foreign legal systems, entertainment, or instructions to override safety policy are out of scope.
-            </p>
-          </div>
-        `;
-        resultsArea.prepend(card);
-        return;
-      }
-
-      // 4. Insufficient Evidence Status (With Related Sources)
-      if (data.status === "insufficient_evidence") {
-        let relatedHtml = "";
-        if (data.related_sources && data.related_sources.length) {
-          relatedHtml = `
-            <div class="pt-2">
-              <h4 class="text-xs font-bold text-slate-700 mb-1.5">Closest Verified Legal References:</h4>
-              <div class="space-y-1.5">
-                ${data.related_sources.map(src => `
-                  <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-                    <div class="font-semibold text-slate-800">${escapeHtml(src.section || "")} — ${escapeHtml(src.source_title || "")}</div>
-                    <div class="text-[11px] text-indigo-600 pt-0.5"><a href="${escapeHtml(src.source_url)}" target="_blank" class="hover:underline">View Official Statute ↗</a></div>
-                  </div>
-                `).join("")}
-              </div>
-            </div>
-          `;
-        }
-
-        card.innerHTML = `
-          <div class="border-l-4 border-rose-500 pl-3.5 py-1 space-y-2">
-            <h3 class="font-bold text-rose-800 text-sm">Insufficient Official Evidence</h3>
-            <p class="text-xs text-slate-600 leading-relaxed">
-              The system refused to generate an answer because no verified passages in the approved legal corpus directly support this specific query. The system does not speculate.
-            </p>
-            ${relatedHtml}
-          </div>
-        `;
-        resultsArea.prepend(card);
-        return;
-      }
-
-      // 5. Answered Status
-      const simpleText = data.short_answer ? data.short_answer.simple : "No simple explanation available.";
-      const detailedText = data.short_answer ? data.short_answer.detailed : "No detailed explanation available.";
-
-      card.innerHTML = `
+  <!-- Feedback Modal -->
+  <div id="modal-feedback" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="feedback-title" hidden>
+    <form id="feedback-form" class="modal-panel">
+      <div class="status-row">
         <div>
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Grounded Legal Answer</span>
-            ${data.last_verified ? `<span class="text-[11px] text-slate-400">Verified: ${escapeHtml(data.last_verified)}</span>` : ""}
-          </div>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 mt-2">${escapeHtml(data.question || question)}</h2>
+          <h2 id="feedback-title" class="section-heading mb-xs">Report an issue with this answer</h2>
+          <p class="card-body-sm">Help us improve accuracy and clarity.</p>
         </div>
+        <button id="btn-feedback-close" type="button" class="btn-icon" aria-label="Close feedback dialog">✕</button>
+      </div>
 
-        <!-- Layer 1: Simple / Detailed Toggle -->
-        <div class="border-b border-slate-200 flex space-x-4 sm:space-x-6 text-xs sm:text-sm font-semibold">
-          <button id="${cardId}-tab-simple" onclick="switchTab('${cardId}', 'simple')" class="pb-2 border-b-2 border-indigo-600 text-indigo-600">Simple Explanation</button>
-          <button id="${cardId}-tab-detailed" onclick="switchTab('${cardId}', 'detailed')" class="pb-2 text-slate-500 hover:text-slate-800 border-b-2 border-transparent">Detailed Summary</button>
-        </div>
+      <fieldset class="fieldset-clean">
+        <legend class="section-kicker mb-xs">What seems wrong?</legend>
+        <label class="radio-option">
+          <input type="radio" name="feedback-reason" value="wrong-law" checked>
+          <span>Wrong law or section cited</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="feedback-reason" value="outdated">
+          <span>Outdated law (e.g., old CrPC/IPC instead of BNSS/BNS)</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="feedback-reason" value="confusing">
+          <span>Confusing or hard to read</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="feedback-reason" value="other">
+          <span>Other</span>
+        </label>
+      </fieldset>
 
-        <div id="${cardId}-content-simple" class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200">
-          ${escapeHtml(simpleText)}
-        </div>
+      <div class="stack-xs">
+        <label for="feedback-notes" class="section-kicker">Additional details (optional)</label>
+        <textarea id="feedback-notes" rows="3" class="text-input-field" placeholder="Tell us which part looks wrong or what you expected..."></textarea>
+      </div>
 
-        <div id="${cardId}-content-detailed" class="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200 hidden">
-          ${escapeHtml(detailedText)}
-        </div>
+      <div class="modal-actions">
+        <button id="btn-feedback-cancel" type="button" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Send feedback</button>
+      </div>
+    </form>
+  </div>
 
-        <!-- Key Points -->
-        ${data.key_points && data.key_points.length ? `
-          <div class="space-y-1.5 pt-1">
-            <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Key Operative Points</h4>
-            <ul class="text-xs text-slate-700 space-y-1.5 list-disc list-inside bg-white">
-              ${data.key_points.map(pt => `<li class="leading-relaxed">${escapeHtml(pt)}</li>`).join("")}
-            </ul>
-          </div>
-        ` : ""}
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-        <!-- Layer 2 Accordion -->
-        ${data.details && data.details.length ? `
-          <div class="pt-2">
-            <button onclick="toggleDetails('${cardId}')" class="flex items-center justify-between w-full p-3 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-xs font-bold text-slate-700 transition">
-              <span>📜 Show Statutory Details & Official Sources (${data.details.length})</span>
-              <span id="${cardId}-chevron">▼</span>
-            </button>
-            <div id="${cardId}-details" class="hidden space-y-3 pt-3">
-              ${data.details.map(d => `
-                <div class="p-3.5 sm:p-4 rounded-xl border border-indigo-100 bg-indigo-50/30 space-y-2 text-xs">
-                  <div class="flex items-center justify-between flex-wrap gap-1.5">
-                    <span class="font-bold text-indigo-900">${escapeHtml(d.section)} (${escapeHtml(d.law)})</span>
-                    ${d.old_equivalent ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[11px] font-mono">${escapeHtml(d.old_equivalent)}</span>` : ""}
-                  </div>
-                  <div class="legal-quote italic text-slate-800 bg-white p-3 rounded-lg border border-slate-200 leading-relaxed">
-                    "${escapeHtml(d.quote)}"
-                  </div>
-                  <div class="flex items-center justify-between text-slate-500 text-[11px] pt-1 flex-wrap gap-1">
-                    <span>Source: <a href="${escapeHtml(d.source_url)}" target="_blank" class="text-indigo-600 underline font-medium">${escapeHtml(d.source_title)}</a></span>
-                    ${d.location ? `<span class="text-slate-400">${escapeHtml(d.location)}</span>` : ""}
-                  </div>
-                </div>
-              `).join("")}
-            </div>
-          </div>
-        ` : ""}
-
-        <!-- Disclaimer & Feedback -->
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2 text-[11px] text-slate-500">
-          <span>${escapeHtml(data.disclaimer || "General information, not legal advice.")}</span>
-          <div class="flex space-x-1.5" id="${cardId}-feedback">
-            <button onclick="sendFeedback('${cardId}', '${escapeHtml(question)}', 'helpful', '${data.status}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs transition">👍 Helpful</button>
-            <button onclick="sendFeedback('${cardId}', '${escapeHtml(question)}', 'wrong', '${data.status}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded text-xs transition">👎 Report Issue</button>
-          </div>
-        </div>
-      `;
-
-      resultsArea.prepend(card);
-    }
-
-    async function sendFeedback(cardId, question, feedbackType, status) {
-      const container = document.getElementById(`${cardId}-feedback`);
-      container.innerHTML = `<span class="text-xs text-indigo-600 font-medium">✓ Feedback recorded</span>`;
-      try {
-        await fetch(`${BASE_URL}/feedback`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            question: question,
-            feedback: feedbackType,
-            response_status: status
-          })
-        });
-      } catch (e) {}
-    }
-
-    function switchTab(cardId, tab) {
-      const tabSimple = document.getElementById(`${cardId}-tab-simple`);
-      const tabDetailed = document.getElementById(`${cardId}-tab-detailed`);
-      const contentSimple = document.getElementById(`${cardId}-content-simple`);
-      const contentDetailed = document.getElementById(`${cardId}-content-detailed`);
-
-      if (tab === "simple") {
-        tabSimple.className = "pb-2 border-b-2 border-indigo-600 text-indigo-600";
-        tabDetailed.className = "pb-2 text-slate-500 hover:text-slate-800 border-b-2 border-transparent";
-        contentSimple.classList.remove("hidden");
-        contentDetailed.classList.add("hidden");
-      } else {
-        tabDetailed.className = "pb-2 border-b-2 border-indigo-600 text-indigo-600";
-        tabSimple.className = "pb-2 text-slate-500 hover:text-slate-800 border-b-2 border-transparent";
-        contentDetailed.classList.remove("hidden");
-        contentSimple.classList.add("hidden");
-      }
-    }
-
-    function toggleDetails(cardId) {
-      const detailsEl = document.getElementById(`${cardId}-details`);
-      const chevron = document.getElementById(`${cardId}-chevron`);
-      if (detailsEl.classList.contains("hidden")) {
-        detailsEl.classList.remove("hidden");
-        chevron.textContent = "▲";
-      } else {
-        detailsEl.classList.add("hidden");
-        chevron.textContent = "▼";
-      }
-    }
-
-    function renderError(err, question) {
-      const card = document.createElement("div");
-      card.className = "bg-rose-50 rounded-2xl border border-rose-200 p-4 text-xs text-rose-800 space-y-2";
-      card.innerHTML = `
-        <div class="font-bold flex items-center space-x-1.5">
-          <span>⚠️</span>
-          <span>Could not reach backend service:</span>
-        </div>
-        <p class="text-rose-700">${escapeHtml(err)}</p>
-        <p class="text-slate-600 text-[11px] pt-1">
-          <strong>Tip for Render Free Tier:</strong> If the backend has been idle, Render puts it to sleep. It automatically wakes up in ~15 to 25 seconds. Please tap "Ask" again in a few moments!
-        </p>
-      `;
-      resultsArea.prepend(card);
-    }
-
-    function escapeHtml(str) {
-      if (!str) return "";
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    }
-  </script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

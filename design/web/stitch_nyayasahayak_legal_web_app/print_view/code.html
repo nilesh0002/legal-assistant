@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print View — NyayaSahayak</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">/** @type {import('tailwindcss').Config} */
+globalThis.tailwind = globalThis.tailwind || {};
+globalThis.tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'accent': '#E0A030',
+        'light-primary': '#1B2A49',
+        'light-on-primary': '#FFFFFF',
+        'light-primary-container': '#D9E2FF',
+        'light-on-primary-container': '#0A1B39',
+        'light-secondary': '#805600',
+        'light-on-secondary': '#FFFFFF',
+        'light-secondary-container': '#FFEEDB',
+        'light-on-secondary-container': '#442C00',
+        'light-background': '#F7F6F2',
+        'light-on-background': '#1E1E1E',
+        'light-surface': '#F7F6F2',
+        'light-on-surface': '#1E1E1E',
+        'light-surface-container-lowest': '#FFFFFF',
+        'light-surface-container-low': '#F9F3E9',
+        'light-surface-container': '#F1EFE9',
+        'light-surface-container-high': '#E7E4DC',
+        'light-on-surface-variant': '#49473F',
+        'light-outline': '#75777E',
+        'light-outline-variant': '#D4D1C7',
+        'light-answered': '#006B5C',
+        'light-on-answered': '#FFFFFF',
+        'light-answered-container': '#E0F5F0',
+        'light-on-answered-container': '#00382F',
+        'light-clarification': '#1D5FA8',
+        'light-on-clarification': '#FFFFFF',
+        'light-clarification-container': '#EBF1FF',
+        'light-on-clarification-container': '#00315F',
+        'light-not-covered': '#8D4F00',
+        'light-on-not-covered': '#FFFFFF',
+        'light-not-covered-container': '#FFEEE1',
+        'light-on-not-covered-container': '#4B2700',
+        'light-insufficient': '#615E56',
+        'light-on-insufficient': '#FFFFFF',
+        'light-insufficient-container': '#EFECE4',
+        'light-on-insufficient-container': '#32302A',
+        'light-out-of-scope': '#45464E',
+        'light-on-out-of-scope': '#FFFFFF',
+        'light-out-of-scope-container': '#EAEBF0',
+        'light-on-out-of-scope-container': '#2E3037',
+        'light-error': '#B4271F',
+        'light-on-error': '#FFFFFF',
+        'light-error-container': '#FFEDEA',
+        'light-on-error-container': '#690003',
+        'dark-primary': '#B7C6ED',
+        'dark-on-primary': '#1B2A49',
+        'dark-primary-container': '#21304F',
+        'dark-on-primary-container': '#D9E2FF',
+        'dark-secondary': '#FEBA49',
+        'dark-on-secondary': '#442C00',
+        'dark-secondary-container': '#442C00',
+        'dark-on-secondary-container': '#FFEEDB',
+        'dark-background': '#15130E',
+        'dark-on-background': '#E7E2D8',
+        'dark-surface': '#15130E',
+        'dark-on-surface': '#E7E2D8',
+        'dark-surface-container-lowest': '#0F0E09',
+        'dark-surface-container-low': '#1D1C16',
+        'dark-surface-container': '#24221B',
+        'dark-surface-container-high': '#2E2C24',
+        'dark-on-surface-variant': '#C5C6CF',
+        'dark-outline': '#8F9098',
+        'dark-outline-variant': '#45464E',
+        'dark-answered': '#58DBC3',
+        'dark-on-answered': '#00382F',
+        'dark-answered-container': '#005045',
+        'dark-on-answered-container': '#B6FFEE',
+        'dark-clarification': '#A6C8FF',
+        'dark-on-clarification': '#00315F',
+        'dark-clarification-container': '#004787',
+        'dark-on-clarification-container': '#EBF1FF',
+        'dark-not-covered': '#FFB876',
+        'dark-on-not-covered': '#4B2700',
+        'dark-not-covered-container': '#6B3B00',
+        'dark-on-not-covered-container': '#FFEEE1',
+        'dark-insufficient': '#CBC6BC',
+        'dark-on-insufficient': '#32302A',
+        'dark-insufficient-container': '#49473F',
+        'dark-on-insufficient-container': '#F6F0E6',
+        'dark-out-of-scope': '#C5C6CF',
+        'dark-on-out-of-scope': '#2E3037',
+        'dark-out-of-scope-container': '#45464E',
+        'dark-on-out-of-scope-container': '#F0F0F9',
+        'dark-error': '#FFB4AA',
+        'dark-on-error': '#690003',
+        'dark-error-container': '#910809',
+        'dark-on-error-container': '#FFEDEA',
+      },
+      borderRadius: {
+        'sm': '6px',
+        'DEFAULT': '12px',
+        'md': '12px',
+        'lg': '16px',
+        'xl': '24px',
+        'full': '9999px',
+      },
+      spacing: {
+        'xs': '4px',
+        'sm': '8px',
+        'md': '16px',
+        'lg': '24px',
+        'xl': '32px',
+        '2xl': '48px',
+      },
+      fontFamily: {
+        'display': ['"Noto Sans"', 'sans-serif'],
+        'headline': ['"Noto Sans"', 'sans-serif'],
+        'title': ['"Noto Sans"', 'sans-serif'],
+        'body': ['"Noto Sans"', 'sans-serif'],
+        'label': ['"Noto Sans"', 'sans-serif'],
+        'statute': ['"Noto Serif"', 'sans-serif'],
+        'mono': ['"Source Code Pro"', 'monospace'],
+      },
+      fontSize: {
+        'display-lg': ['40px', { lineHeight: '48px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'display-lg-mobile': ['28px', { lineHeight: '36px', letterSpacing: '-0.25px', fontWeight: '700' }],
+        'headline-lg': ['28px', { lineHeight: '36px', letterSpacing: '-0.25px', fontWeight: '700' }],
+        'headline-md': ['22px', { lineHeight: '30px', letterSpacing: '0px', fontWeight: '600' }],
+        'title-lg': ['18px', { lineHeight: '26px', letterSpacing: '0px', fontWeight: '600' }],
+        'title-md': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '600' }],
+        'body-lg': ['18px', { lineHeight: '28px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-md': ['16px', { lineHeight: '24px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-sm': ['14px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '400' }],
+        'label-lg': ['15px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '600' }],
+        'label-md': ['13px', { lineHeight: '18px', letterSpacing: '0.1px', fontWeight: '600' }],
+        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '500' }],
+        'statute-quote': ['17px', { lineHeight: '28px', letterSpacing: '0px', fontWeight: '400' }],
+        'mono-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '500' }],
+      },
+      transitionDuration: {
+        'state-change': '120ms',
+        'surface-enter': '220ms',
+        'surface-exit': '150ms',
+      },
+      transitionDelay: {
+        'state-change': '0ms',
+        'surface-enter': '0ms',
+        'surface-exit': '0ms',
+      },
+      transitionTimingFunction: {
+        'state-change': 'ease-out',
+        'surface-enter': 'cubic-bezier(0.2, 0, 0, 1)',
+        'surface-exit': 'cubic-bezier(0.3, 0, 1, 1)',
+      },
+    },
+  },
+};
+if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
+</script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,600;1,400&amp;family=Source+Code+Pro:wght@400;500&amp;display=swap" rel="stylesheet">
+</head>
+<body class="bg-light-surface-container-lowest text-light-on-surface font-body antialiased p-lg md:p-2xl">
+  <main class="max-w-[760px] mx-auto flex flex-col gap-xl">
+    <!-- Clean Black-on-White Print Header -->
+    <header class="pb-md border-b border-light-on-surface flex items-baseline justify-between gap-md">
+      <div>
+        <h1 class="font-headline text-headline-md text-light-on-surface">NyayaSahayak</h1>
+        <p class="font-body text-body-sm text-light-on-surface-variant">Official-source legal reference · Printed 24 Nov 2026</p>
+      </div>
+      <span class="font-mono text-mono-sm text-light-on-surface-variant">Status: Answered</span>
+    </header>
+
+    <section class="flex flex-col gap-sm">
+      <p class="font-label text-label-md text-light-on-surface-variant">Question</p>
+      <h2 class="font-headline text-title-lg text-light-on-surface">
+        What does the law say about personal liberty and being informed of the grounds of arrest?
+      </h2>
+    </section>
+
+    <section class="flex flex-col gap-md">
+      <h3 class="font-headline text-title-lg text-light-on-surface">Summary</h3>
+      <ul class="flex flex-col gap-sm font-body text-body-md max-w-prose">
+        <li>• <strong>Right to life and liberty:</strong> No person in India can be deprived of life or personal liberty except by a clear, fair procedure written in law.</li>
+        <li>• <strong>Right to know why you are arrested:</strong> Any police officer arresting a person without a warrant must immediately tell them the full particulars of the offence or grounds for arrest.</li>
+        <li>• <strong>Right to bail information:</strong> If the offence is bailable, the officer must inform the arrested person of their right to be released on bail.</li>
+      </ul>
+    </section>
+
+    <section class="flex flex-col gap-lg pt-md border-t border-light-outline-variant">
+      <h3 class="font-headline text-title-lg text-light-on-surface">Official Sources &amp; Exact Quotes</h3>
+
+      <article class="flex flex-col gap-sm">
+        <p class="font-title text-title-md">1. Constitution of India — Article 21 (Protection of life and personal liberty)</p>
+        <blockquote class="font-statute text-statute-quote pl-md border-l-2 border-light-on-surface">
+          &#34;No person shall be deprived of his life or personal liberty except according to procedure established by law.&#34;
+        </blockquote>
+        <p class="font-mono text-mono-sm text-light-on-surface-variant">Source: Legislative Department, Govt. of India · Last verified: 14 Nov 2026</p>
+      </article>
+
+      <article class="flex flex-col gap-sm">
+        <p class="font-title text-title-md">2. Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023 — Section 47(1) (Earlier law: CrPC Section 50)</p>
+        <blockquote class="font-statute text-statute-quote pl-md border-l-2 border-light-on-surface">
+          &#34;Every police officer or other person arresting any person without warrant shall forthwith communicate to him full particulars of the offence for which he is arrested or other grounds for such arrest.&#34;
+        </blockquote>
+        <p class="font-mono text-mono-sm text-light-on-surface-variant">Source: India Code (Act 46 of 2023) · Last verified: 10 Nov 2026</p>
+      </article>
+    </section>
+
+    <footer class="pt-md border-t border-light-on-surface">
+      <p class="font-body text-body-sm text-light-on-surface-variant">
+        <strong>Disclaimer:</strong> NyayaSahayak provides general legal information from official Indian government publications (Beta). It is not legal advice and is not a substitute for a qualified advocate.
+      </p>
+    </footer>
+  </main>
+
+
+</body></html>

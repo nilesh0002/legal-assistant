@@ -108,3 +108,30 @@ class GeminiLLM(BaseLLM):
                 raise UpstreamServiceError(f"Gemini network error after retries: {last_error}")
 
         raise UpstreamServiceError(f"Gemini failed after {self.max_retries} attempts: {last_error}")
+
+    async def rewrite_search_queries(self, question: str) -> List[str]:
+        """Rewrite a lay question into 2-3 legal search queries (search only, never answer content)."""
+        if not await self.is_available():
+            return []
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent?key={self.api_key}"
+        prompt = (
+            "Rewrite the following citizen question about Indian law into 2 to 3 concise "
+            "statutory search queries using formal legal terms. Do NOT answer the question. "
+            "Output a JSON array of strings only.\n\nQuestion: " + question
+        )
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"response_mime_type": "application/json", "temperature": 0.0},
+        }
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    txt = data["candidates"][0]["content"]["parts"][0]["text"]
+                    arr = json.loads(txt)
+                    if isinstance(arr, list):
+                        return [str(x) for x in arr[:3]]
+        except Exception:
+            pass
+        return []

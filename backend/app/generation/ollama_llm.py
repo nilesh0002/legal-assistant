@@ -71,3 +71,29 @@ class OllamaLLM(BaseLLM):
                 return LegalResponse(**parsed)
         except Exception as e:
             raise UpstreamServiceError(f"Ollama generation failed: {e}")
+
+    async def rewrite_search_queries(self, question: str) -> List[str]:
+        """Rewrite a lay question into 2-3 legal search queries (search only, never answer content)."""
+        prompt = (
+            "Rewrite the following citizen question about Indian law into 2 to 3 concise "
+            "statutory search queries using formal legal terms. Do NOT answer the question. "
+            "Output a JSON array of strings only.\n\nQuestion: " + question
+        )
+        payload = {
+            "model": self.model_name,
+            "prompt": prompt,
+            "format": "json",
+            "stream": False,
+            "options": {"temperature": 0.0},
+        }
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(f"{self.base_url}/api/generate", json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    arr = json.loads(data["response"])
+                    if isinstance(arr, list):
+                        return [str(x) for x in arr[:3]]
+        except Exception:
+            pass
+        return []

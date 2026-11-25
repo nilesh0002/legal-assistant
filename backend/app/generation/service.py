@@ -45,42 +45,42 @@ OUT_OF_SCOPE_PATTERNS = [
 ]
 
 
-# Clarification triggers for ambiguous or single-word queries
+# Clarification triggers for ambiguous or single-word queries (Rule 3: no hardcoded section numbers)
 CLARIFICATION_TRIGGERS = [
     (
         r"^(?:what\s+is\s+)?(?:the\s+procedure\s+for\s+)?bail\??$",
         "Which bail procedure do you need information about?",
         [
-            "Bail in bailable offences (Section 478 BNSS)",
-            "Bail in non-bailable offences (Section 480 BNSS)",
-            "Anticipatory bail (Section 482 BNSS)",
+            "Bail in bailable offences under BNSS",
+            "Bail in non-bailable offences under BNSS",
+            "Anticipatory bail for apprehending arrest",
         ],
     ),
     (
         r"^(?:what\s+is\s+)?(?:the\s+procedure\s+for\s+)?arrest\??$",
         "Which aspect of arrest procedure would you like to know?",
         [
-            "Arrest without warrant (Section 35 BNSS)",
-            "Arrest of women after sunset (Section 43 BNSS)",
-            "Rights of an arrested person (Sections 38, 47, 48 BNSS)",
+            "When can police arrest without warrant?",
+            "Can women be arrested after sunset?",
+            "What are the rights of an arrested person?",
         ],
     ),
     (
         r"^(?:what\s+are\s+my\s+)?(?:fundamental\s+)?rights\??$",
         "Which legal or constitutional rights are you inquiring about?",
         [
-            "Right to equality (Article 14)",
-            "Right to life & liberty (Article 21)",
-            "Freedom of speech (Article 19)",
+            "Right to equality before the law",
+            "Protection of life and personal liberty",
+            "Freedom of speech and expression",
         ],
     ),
     (
         r"^(?:what\s+is\s+)?(?:a\s+)?warrant\??$",
         "Which court process would you like information on?",
         [
-            "Form and duration of arrest warrant (Section 72 BNSS)",
-            "Bailable warrant conditions (Section 73 BNSS)",
-            "Search warrant procedure (Section 96 BNSS)",
+            "Form and duration of arrest warrant",
+            "Bailable warrant and security conditions",
+            "Search warrant and electronic recording",
         ],
     ),
 ]
@@ -139,6 +139,71 @@ class AskService:
                 return domain
         return None
 
+    def _load_corpus_index_info(self):
+        """Load indexed section/article sets and Article 37 chunk directly from processed corpus."""
+        if hasattr(self, "_cached_indexed_provisions"):
+            return self._cached_indexed_provisions, self._cached_art37
+
+        chunks_path = Path(__file__).resolve().parent.parent.parent / "data" / "processed" / "all_chunks.json"
+        provisions = set()
+        art37 = None
+        if chunks_path.exists():
+            try:
+                with open(chunks_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                for c in data:
+                    art = (c.get("article") or "").strip().upper()
+                    sec = (c.get("section") or "").strip().upper()
+                    if art:
+                        provisions.add(art)
+                    if sec:
+                        provisions.add(sec)
+                    if art == "ARTICLE 37":
+                        art37 = c
+            except Exception:
+                pass
+        self._cached_indexed_provisions = provisions
+        self._cached_art37 = art37
+        return provisions, art37
+
+    def _is_section_or_article_indexed(self, label: str, num: str) -> bool:
+        """Check if an explicitly requested Article/Section (or its mapped equivalent) is indexed."""
+        provisions, _ = self._load_corpus_index_info()
+        if not provisions:
+            return True
+        target_key = f"{label.upper()} {num.upper()}"
+        if target_key in provisions:
+            return True
+        # Check mapped equivalents (e.g. CrPC 436A -> BNSS 479, IPC 302 -> BNS 103)
+        if label.lower() == "section" and hasattr(self.validator, "section_mappings"):
+            equivs = self.validator.section_mappings.get(num.upper(), set())
+            for eq in equivs:
+                if f"SECTION {eq}" in provisions:
+                    return True
+        return False
+
+    def _to_related_source(self, chunk) -> SourceDetail:
+        sources_map = self.validator.approved_sources
+        meta = chunk.metadata
+        prov = (meta.get("article") or meta.get("section") or "").strip()
+        title = meta.get("title", prov)
+        sid = chunk.source_id
+        src_url = meta.get("source_url") or (sources_map.get(sid, {}).get("url") if sid in sources_map else "")
+        clean_quote = " ".join(chunk.text.split())
+        if len(clean_quote) > 250:
+            clean_quote = clean_quote[:250] + "..."
+        return SourceDetail(
+            claim=f"Related provision: {prov}",
+            law=meta.get("law", "Indian Statute"),
+            section=prov,
+            old_equivalent=meta.get("old_equivalent"),
+            quote=clean_quote,
+            source_id=sid,
+            source_title=title,
+            source_url=src_url or "https://legislative.gov.in",
+            location=meta.get("location", "Reported text"),
+        )
+
     def _has_sufficient_evidence(self, top_chunk) -> bool:
         """
         Check if the top retrieved chunk provides genuine evidence
@@ -188,14 +253,34 @@ class AskService:
                 uncovered_area=uncovered_area,
                 key_points=[
                     f"This legal query falls under {uncovered_area}, which is not yet indexed in NyayaSahayak.",
-                    "The assistant currently indexes only the Constitution of India and Bharatiya Nagarik Suraksha Sanhita (BNSS 2023).",
+                    "The assistant currently indexes only selected sections of the Constitution of India, BNSS 2023, BNS 2023, Consumer Protection Act 2019, and RTI Act 2005.",
                     "The system does not speculate about the contents of unindexed laws."
                 ],
                 disclaimer="General information, not legal advice.",
             )
 
-        # 2. Query Understanding & Multi-Query Search
-        search_queries = QueryRewriter.rewrite_queries(question, conversation_history)
+        # 3b. Coverage Honesty: if user explicitly names an Article or Section not indexed, never substitute a nearby section
+        explicit_provisions = re.findall(r"\b(Article|Section)\s+(\d+[A-Z]?)\b", question, re.IGNORECASE)
+        for label, num in explicit_provisions:
+            if not self._is_section_or_article_indexed(label, num):
+                return LegalResponse(
+                    status=AnswerStatus.NOT_COVERED_YET,
+                    question=question,
+                    uncovered_area=f"{label.title()} {num} (not in indexed selected sections)",
+                    key_points=[
+                        f"{label.title()} {num} is not among the selected sections currently indexed in NyayaSahayak.",
+                        "To ensure strict accuracy, the assistant never substitutes a nearby section."
+                    ],
+                    disclaimer="General information, not legal advice.",
+                )
+
+        # 4. Resolve LLM provider early so real LLM can rewrite queries when available
+        llm_instance = self.llm or await get_llm_provider()
+
+        # 5. Query Understanding & Multi-Query Search
+        search_queries = await QueryRewriter.rewrite_queries_async(
+            question, conversation_history=conversation_history, llm=llm_instance
+        )
         all_candidates = {}
         agreement_counts = {}
         rrf_scores = {}
@@ -215,7 +300,7 @@ class AskService:
         # Multi-query merged candidates
         merged_candidates = sorted(all_candidates.values(), key=lambda c: rrf_scores[c.chunk_id], reverse=True)
 
-        # 3. Cross-Encoder Reranker
+        # 6. Cross-Encoder Reranker
         chunks = self.reranker.rerank(
             query=question,
             candidates=merged_candidates,
@@ -223,39 +308,46 @@ class AskService:
             top_k=5,
         )
 
-        # 4. Calibrated Evidence Gate
+        # 7. Calibrated Evidence Gate
         if not chunks or not self._has_sufficient_evidence(chunks[0]):
-            related_sources = []
-            if chunks:
-                sources_map = self.validator.approved_sources
-                for c in chunks[:3]:
-                    meta = c.metadata
-                    prov = (meta.get("article") or meta.get("section") or "").strip()
-                    title = meta.get("title", prov)
-                    sid = c.source_id
-                    src_url = meta.get("source_url") or (sources_map.get(sid, {}).get("url") if sid in sources_map else "")
-                    clean_quote = " ".join(c.text.split())
-                    if len(clean_quote) > 200:
-                        clean_quote = clean_quote[:200] + "..."
-                    related_sources.append(
-                        SourceDetail(
-                            claim=f"Related provision: {prov}",
-                            law=meta.get("law", "Indian Statute"),
-                            section=prov,
-                            old_equivalent=meta.get("old_equivalent"),
-                            quote=clean_quote,
-                            source_id=sid,
-                            source_title=title,
-                            source_url=src_url or "https://legislative.gov.in",
-                            location=meta.get("location", "Reported text"),
-                        )
-                    )
+            related_sources = [self._to_related_source(c) for c in chunks[:3]] if chunks else []
             return LegalResponse(
                 status=AnswerStatus.INSUFFICIENT_EVIDENCE,
                 question=question,
                 key_points=[
                     "No sufficiently relevant passages were found in the approved legal corpus.",
                     "The system refuses to generate answers without verified source evidence."
+                ],
+                related_sources=related_sources,
+                disclaimer="General information, not legal advice.",
+            )
+
+        # 8. Private-Person / Directive Principle (Part IV) Guard
+        top_part = chunks[0].metadata.get("part", "")
+        top_part_title = chunks[0].metadata.get("part_title", "")
+        is_part4 = (top_part == "Part IV") or ("Directive Principles" in top_part_title)
+        is_private_actor_query = bool(re.search(
+            r"\b(?:private\s+(?:company|companies|employer|sector|firm|person|individual|school|hospital|office)|"
+            r"employer|it\s+compan(?:y|ies)|corporate|private\s+job)\b",
+            question,
+            re.IGNORECASE,
+        ))
+        if is_part4 and is_private_actor_query:
+            _, art37_chunk = self._load_corpus_index_info()
+            art37_note = (
+                f"Under {art37_chunk.get('title', 'Article 37')} ({art37_chunk.get('location', 'Part IV, Article 37')}): "
+                f"\"{art37_chunk.get('text', '')}\""
+                if art37_chunk else
+                "Directive Principles of State Policy (Part IV) are not enforceable by any court against private employers."
+            )
+            related_sources = [self._to_related_source(chunks[0])]
+            return LegalResponse(
+                status=AnswerStatus.INSUFFICIENT_EVIDENCE,
+                question=question,
+                key_points=[
+                    "This question concerns a private employer, company, or individual, whereas the closest match is a Directive Principle of State Policy (Part IV).",
+                    art37_note,
+                    "Private employment obligations depend on specific labour or employment statutes not yet indexed in this corpus."
                 ],
                 related_sources=related_sources,
                 disclaimer="General information, not legal advice.",

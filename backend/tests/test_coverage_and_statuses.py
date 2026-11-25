@@ -29,7 +29,7 @@ async def test_endpoint_coverage():
 
     # Verify last_verified dates are present and not None
     for l in data["laws"]:
-        assert l["last_verified"] in ("2026-11-22", "2026-11-24")
+        assert l["last_verified"] in ("2026-11-22", "2026-11-24", "2026-11-25")
         assert len(l["sections"]) > 0
 
 
@@ -58,7 +58,7 @@ async def test_status_needs_clarification():
     assert resp.short_answer is None
     assert resp.clarification_question is not None
     assert len(resp.clarification_options) in (2, 3)
-    assert any("478" in opt or "480" in opt or "482" in opt for opt in resp.clarification_options)
+    assert any("bailable" in opt.lower() or "anticipatory" in opt.lower() for opt in resp.clarification_options)
 
 
 @pytest.mark.asyncio

@@ -2,28 +2,31 @@
 Query Understanding & Lay-to-Legal Reformulation.
 Rewrites ordinary citizen phrasing into legal statutory search terms,
 and resolves follow-up conversational turns.
+Uses LLM-based rewriting when a real LLM is available, with rule-based fallback.
 Strictly uses question text; never injects external legal facts into answers.
 """
 
+from abc import ABC, abstractmethod
+import json
 import re
 from typing import List, Optional
 
 
-# Lay Phrasing to Statutory Legal Search Term Concepts
+# Lay Phrasing to Statutory Legal Search Term Concepts (Search Hints Only)
 LEGAL_CONCEPT_REWRITES = [
     (
         r"\b(?:without\s+(?:a\s+)?warrant|arrest\s+without\s+warrant)\b",
-        "when police may arrest without warrant cognizable offence credible information Section 35",
+        "when police may arrest without warrant cognizable offence credible information",
         "arrest without warrant procedure of arrest",
     ),
     (
         r"\b(?:bailable\s+offences?|bailable\s+cases?)\b",
-        "in what cases bail to be taken bailable offence discharge on bail Section 478",
+        "in what cases bail to be taken bailable offence discharge on bail",
         "procedure for bail in bailable offences",
     ),
     (
         r"\b(?:medical\s+examination|medical\s+checkup|examined\s+by\s+doctor)\b",
-        "examination of accused by medical practitioner examination of arrested person Section 51 Section 53",
+        "examination of accused by medical practitioner examination of arrested person",
         "medical officer examination of person arrested",
     ),
     (
@@ -84,9 +87,22 @@ LEGAL_CONCEPT_REWRITES = [
 ]
 
 
-class QueryRewriter:
+class BaseQueryRewriter(ABC):
+    """Interface for query rewriting implementations."""
+
+    @abstractmethod
+    def rewrite_queries(
+        self,
+        question: str,
+        conversation_history: Optional[List[dict]] = None,
+    ) -> List[str]:
+        pass
+
+
+class QueryRewriter(BaseQueryRewriter):
     """
     Expands conversational and lay legal queries into targeted statutory search queries.
+    Acts as deterministic rule-based fallback when no external LLM is available.
     """
 
     @classmethod
@@ -97,7 +113,6 @@ class QueryRewriter:
     ) -> str:
         """
         Resolves follow-up queries using previous turns (last 2 max).
-        e.g., 'what about at night?' -> 'When can police arrest without warrant at night?'
         """
         if not conversation_history:
             return question.strip()
@@ -109,7 +124,6 @@ class QueryRewriter:
             last_turn = conversation_history[-1]
             last_q = last_turn.get("question", "") if isinstance(last_turn, dict) else ""
             if last_q:
-                # Merge topic from last question with current modifier
                 cleaned_base = re.sub(r"\?+$", "", last_q.strip())
                 cleaned_followup = re.sub(r"^(?:what\s+about|and\s+for|how\s+about|and\s+if|what\s+if)\s+", "", q_lower).rstrip("?")
                 return f"{cleaned_base} {cleaned_followup}?"
@@ -125,8 +139,8 @@ class QueryRewriter:
         """
         Produces 2 to 3 search queries:
         1. Resolved original question
-        2. Legal statutory rewrite 1
-        3. Legal statutory rewrite 2 (if concepts matched)
+        2. Legal statutory search hint 1
+        3. Legal statutory search hint 2 (if concepts matched)
         """
         resolved_q = cls.resolve_conversation(question, conversation_history)
         queries = [resolved_q]
@@ -140,12 +154,36 @@ class QueryRewriter:
                     matched_rewrites.append(r2)
 
         if matched_rewrites:
-            # Add up to 2 distinct rewrites
             for r in matched_rewrites[:2]:
                 if r not in queries:
                     queries.append(r)
         else:
-            # Generic legal syntax rewrite
             queries.append(f"{resolved_q} Indian statutory law procedure rights")
 
         return queries
+
+    @classmethod
+    async def rewrite_queries_async(
+        cls,
+        question: str,
+        conversation_history: Optional[List[dict]] = None,
+        llm=None,
+    ) -> List[str]:
+        """
+        Uses an LLM to rewrite the lay question into 2-3 legal search queries
+        when a real LLM is available (and not LocalGroundedLLM), falling back
+        to rule-based search hints otherwise.
+        Rewrites are used strictly for retrieval and never as answer content.
+        """
+        resolved_q = cls.resolve_conversation(question, conversation_history)
+        if llm is not None and llm.__class__.__name__ != "LocalGroundedLLM":
+            try:
+                if hasattr(llm, "rewrite_search_queries"):
+                    llm_queries = await llm.rewrite_search_queries(resolved_q)
+                    if llm_queries and isinstance(llm_queries, list):
+                        merged = [resolved_q] + [str(q).strip() for q in llm_queries if str(q).strip()]
+                        return list(dict.fromkeys(merged))[:4]
+            except Exception:
+                pass
+
+        return cls.rewrite_queries(question, conversation_history)

@@ -1,8 +1,19 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+val debugBaseUrl = localProperties.getProperty("base.url", "http://10.0.2.2:8000/")
+val releaseBaseUrl = localProperties.getProperty("release.base.url", "https://legal-assistant-1qgm.onrender.com/")
 
 android {
     namespace = "com.legalassistant"
@@ -12,11 +23,22 @@ android {
         applicationId = "com.legalassistant"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.3.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        // Live production cloud backend (with required trailing slash)
-        buildConfigField("String", "BASE_URL", "\"https://legal-assistant-1qgm.onrender.com/\"")
+    buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"$debugBaseUrl\"")
+            buildConfigField("Boolean", "REQUIRE_HTTPS", "false")
+        }
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("String", "BASE_URL", "\"$releaseBaseUrl\"")
+            buildConfigField("Boolean", "REQUIRE_HTTPS", "true")
+        }
     }
 
     buildFeatures {
@@ -32,10 +54,16 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
-    // Compose BOM — single version for all Compose libraries
+    // Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(composeBom)
 

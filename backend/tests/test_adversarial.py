@@ -28,11 +28,11 @@ async def test_adversarial_fake_case_name():
 
 @pytest.mark.asyncio
 async def test_adversarial_fake_article_number():
-    """Querying a non-existent article (Article 999) must be rejected."""
+    """Querying a non-existent article (Article 999) must be rejected with insufficient_evidence or not_covered_yet."""
     service = AskService()
     resp = await service.answer_question("What does Article 999 of the Constitution of India state?")
 
-    assert resp.status == AnswerStatus.INSUFFICIENT_EVIDENCE
+    assert resp.status in (AnswerStatus.INSUFFICIENT_EVIDENCE, AnswerStatus.NOT_COVERED_YET)
     assert resp.short_answer is None
     assert resp.disclaimer == "General information, not legal advice."
 

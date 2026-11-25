@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Legal Assistant</string>
+    <string name="app_name">NyayaSahayak</string>
     <string name="health_checking">Checking backend connection…</string>
     <string name="health_connected">Connected to backend</string>
     <string name="health_error">Cannot reach backend</string>

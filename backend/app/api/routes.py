@@ -125,12 +125,15 @@ async def ask_legal_question(request: QuestionRequest):
 @router.get("/coverage")
 async def get_coverage():
     """
-    Lists indexed laws and sections with last-verified dates.
-    Shows users exactly what is authoritative in the corpus.
+    Lists indexed laws and selected sections with last-verified dates.
+    Explicitly indicates that only selected sections are indexed.
     """
+    from app.validation.validator import load_approved_sources
+
     base_dir = Path(__file__).resolve().parent.parent.parent
     all_chunks_file = base_dir / "data" / "processed" / "all_chunks.json"
-    
+    sources_map = load_approved_sources()
+
     sections_by_law = {}
     if all_chunks_file.exists():
         with open(all_chunks_file, "r", encoding="utf-8") as f:
@@ -142,10 +145,12 @@ async def get_coverage():
                 sec = meta.get("article") or meta.get("section") or c.get("article") or c.get("section") or ""
                 title = meta.get("title") or c.get("title") or sec
                 if law not in sections_by_law:
+                    rec_date = sources_map.get(sid, {}).get("retrieved")
                     sections_by_law[law] = {
                         "law": law,
                         "source_id": sid,
-                        "last_verified": "2026-11-24" if sid == "bnss-2023" else "2026-11-22",
+                        "coverage_note": "Selected sections only — not the complete statute.",
+                        "last_verified": str(rec_date) if rec_date else "2026-11-22",
                         "sections": []
                     }
                 sections_by_law[law]["sections"].append({
@@ -155,6 +160,7 @@ async def get_coverage():
                 })
 
     return {
+        "note": "Selected sections only. Only the listed sections from official Government of India sources are indexed.",
         "total_chunks": sum(len(l["sections"]) for l in sections_by_law.values()),
         "laws": list(sections_by_law.values()),
     }
@@ -172,10 +178,10 @@ async def get_example_questions():
             "What is the maximum time police can detain someone without a Magistrate?",
             "Can women be arrested after sunset and before sunrise?",
             "How does a person apply for anticipatory bail under Section 482?",
-            "What are the rights of an arrested person during interrogation?",
-            "What is the procedure for bail in bailable offences under Section 478?",
-            "Is audio-video electronic recording mandatory during police search and seizure?",
-            "Can a private citizen arrest an offender under BNSS?",
+            "What is the punishment for murder under Section 103 of BNS?",
+            "What is the limitation period for filing a consumer complaint under Section 69?",
+            "Within how many days must a Public Information Officer dispose of an RTI request under Section 7?",
+            "What is the penalty on a Public Information Officer under Section 20 of the RTI Act?",
             "Explain the right to equality before the law under Article 14."
         ]
     }

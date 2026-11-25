@@ -23,6 +23,9 @@ backend/data/processed/chroma_db/
 *.swp
 *.swo
 
+# Web tests
+web-tests/node_modules/
+
 # Android
 android/.gradle/
 android/build/
@@ -33,6 +36,8 @@ android/captures/
 *.aab
 *.jks
 *.keystore
+*keystore.properties
+release.properties
 
 # OS
 .DS_Store

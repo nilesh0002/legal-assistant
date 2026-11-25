@@ -12,12 +12,15 @@ import com.legalassistant.ui.AppScreen
 import com.legalassistant.ui.LegalChatViewModel
 import com.legalassistant.ui.screens.AboutScreen
 import com.legalassistant.ui.screens.ChatScreen
+import com.legalassistant.ui.screens.CoverageScreen
+import com.legalassistant.ui.screens.HistoryScreen
 import com.legalassistant.ui.screens.HomeScreen
+import com.legalassistant.ui.screens.WelcomeScreen
 import com.legalassistant.ui.theme.LegalAssistantTheme
 
 /**
- * Single-activity app.
- * Screens: Home, Chat, and About/Disclaimer.
+ * Single-activity app implementing Stitch civic design system.
+ * Screens: Welcome (first launch only), Home, Chat, History, Coverage, About/Settings.
  */
 class MainActivity : ComponentActivity() {
 
@@ -41,8 +44,11 @@ class MainActivity : ComponentActivity() {
                 val uiState by viewModel.uiState.collectAsState()
 
                 when (uiState.currentScreen) {
+                    AppScreen.WELCOME -> WelcomeScreen(onAccept = { viewModel.acceptDisclaimer() })
                     AppScreen.HOME -> HomeScreen(viewModel = viewModel)
                     AppScreen.CHAT -> ChatScreen(viewModel = viewModel)
+                    AppScreen.HISTORY -> HistoryScreen(viewModel = viewModel)
+                    AppScreen.COVERAGE -> CoverageScreen(viewModel = viewModel)
                     AppScreen.ABOUT -> AboutScreen(viewModel = viewModel)
                 }
             }

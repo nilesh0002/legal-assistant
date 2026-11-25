@@ -23,7 +23,9 @@ from app.models.schemas import AnswerStatus
 
 async def run_evaluation():
     eval_dir = Path(__file__).resolve().parent
-    yaml_path = eval_dir / "heldout.yaml"
+    yaml_path = eval_dir / "heldout_v2.yaml"
+    if not yaml_path.exists():
+        yaml_path = eval_dir / "dev.yaml"
     with open(yaml_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 

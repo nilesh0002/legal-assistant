@@ -19,8 +19,9 @@ sources:
     url: "https://www.legislative.gov.in/static/uploads/2025/07/c9fe9c9b6840524844316f74bb1c556c.pdf"
     publisher: "Legislative Department, Ministry of Law and Justice, Government of India"
     retrieved: "2026-11-22"
+    sha256: "4c8e93689ec245e26db08e22b5ff3ad645c98736f0e5b7c8b6638acd7861f85b"
     version: "As on 1st May, 2026, incorporating amendments up to the Constitution (One Hundred and Sixth Amendment) Act, 2023"
-    scope: "Preamble, Part III (Articles 12-35), Part IV (Articles 36-51), Part IVA (Article 51A)"
+    scope: "Selected sections: Preamble, Part III (Articles 12-35), Part IV (Articles 36-51), Part IVA (Article 51A)"
     status: active
 
   - id: bnss-2023
@@ -28,8 +29,9 @@ sources:
     url: "https://egazette.gov.in/WriteReadData/2023/250884.pdf"
     publisher: "Legislative Department, Ministry of Law and Justice, Government of India (Official Gazette Extraordinary)"
     retrieved: "2026-11-24"
+    sha256: "5e60e2afe30d0fe7eca4f8126301146b76c86a444e690581f81eb564843517fe"
     version: "Act No. 46 of 2023"
-    scope: "Key procedural sections: Chapter V Arrest (Sections 35-62), Chapter VI Process to Compel Appearance (Sections 63, 64, 70, 72, 73, 84), Chapter VII Search & Seizure (Sections 94, 96, 103, 105, 106, 107), Chapter XIV Remand/Custody Limits (Section 187), Chapter XXXV Bail (Sections 478, 479, 480, 482, 483)"
+    scope: "Selected sections: Chapter V Arrest (Sections 35-62), Chapter VI Process to Compel Appearance (Sections 63, 64, 70, 72, 73, 84), Chapter VII Search & Seizure (Sections 94, 96, 103, 105, 106, 107), Chapter XIV Remand/Custody Limits (Section 187), Chapter XXXV Bail (Sections 478, 479, 480, 482, 483)"
     status: active
 
   - id: bns-2023
@@ -37,8 +39,29 @@ sources:
     url: "https://egazette.gov.in/WriteReadData/2023/250883.pdf"
     publisher: "Legislative Department, Ministry of Law and Justice, Government of India (Official Gazette Extraordinary No. 45 of 2023)"
     retrieved: "2026-11-24"
+    sha256: "67c92f7869420685e6cdc29b1bdde19fff91312b10241b3ed3e1163c5399600b"
     version: "Act No. 45 of 2023"
-    scope: "Key offences and punishments: General Exceptions (Sec 14, 20, 22, 34, 37), Offences Against Women & Children (Sec 63, 64, 69, 74-78, 84, 85), Body (Sec 100, 101, 103, 105, 106, 114, 115, 117, 126, 127, 137, 140), State (Sec 152), Tranquillity (Sec 189, 191, 194, 196), Property (Sec 303, 307, 308, 310, 314, 316, 318, 324, 329, 331), Defamation & Intimidation (Sec 351, 356)"
+    scope: "Selected sections: General Exceptions (Sec 14, 20, 22, 34, 37), Offences Against Women & Children (Sec 63, 64, 69, 74-78, 80, 85), Body (Sec 100, 101, 103, 105, 106, 114, 115, 117, 126, 127, 137, 140), State (Sec 152), Tranquillity (Sec 189, 191, 194, 196), Property (Sec 303, 307, 308, 310, 314, 316, 318, 324, 329, 331), Defamation & Intimidation (Sec 351, 356)"
+    status: active
+
+  - id: cpa-2019
+    title: "The Consumer Protection Act, 2019"
+    url: "https://egazette.gov.in/WriteReadData/2019/210422.pdf"
+    publisher: "Legislative Department, Ministry of Law and Justice, Government of India (Official Gazette Extraordinary)"
+    retrieved: "2026-11-25"
+    sha256: "0ae7f82ab5b77d50087cd4cd2dd2dbc12755c0bdb31371fdefd042b020d50756"
+    version: "Act No. 35 of 2019"
+    scope: "Selected sections: Definitions (Sec 2), Central Authority (Sec 10, 18, 20, 21), Commissions & Complaints (Sec 28, 34, 35, 38, 39, 41, 47, 51, 58, 67, 69), Mediation (Sec 74), Product Liability (Sec 82-87), Offences & Penalties (Sec 88-91)"
+    status: active
+
+  - id: rti-2005
+    title: "The Right to Information Act, 2005"
+    url: "https://cic.gov.in/sites/default/files/RTI-Act_English.pdf"
+    publisher: "Central Information Commission / Ministry of Law and Justice, Government of India"
+    retrieved: "2026-11-25"
+    sha256: "e0b70162cb414d26455b86ee566db5f918bcd2bbcdc1b24d331e1a5a3933e577"
+    version: "Act No. 22 of 2005"
+    scope: "Selected sections: Definitions (Sec 2), Right & Obligations (Sec 3-11), Central Information Commission (Sec 12), Powers, Appeals & Penalties (Sec 18-20), Miscellaneous (Sec 22-24)"
     status: active
 
   - id: bsa-2023

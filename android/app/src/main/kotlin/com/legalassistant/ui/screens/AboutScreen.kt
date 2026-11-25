@@ -3,27 +3,30 @@ package com.legalassistant.ui.screens
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.legalassistant.BuildConfig
-import com.legalassistant.data.api.GitHubUpdateChecker
-import com.legalassistant.data.api.UpdateInfo
 import com.legalassistant.ui.AppScreen
 import com.legalassistant.ui.LegalChatViewModel
-import kotlinx.coroutines.launch
+import com.legalassistant.ui.theme.LocalStatusColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,21 +35,23 @@ fun AboutScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
-    var tempUrl by remember { mutableStateOf(uiState.baseUrl) }
-    var saveMessage by remember { mutableStateOf<String?>(null) }
-    var isCheckingUpdate by remember { mutableStateOf(false) }
-    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
+    val statusColors = LocalStatusColors.current
     val scrollState = rememberScrollState()
+
+    var tempUrl by remember { mutableStateOf(uiState.baseUrl) }
+    var saveFeedback by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About & Legal Disclaimer", fontWeight = FontWeight.Bold) },
+                title = { Text("About & Settings", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { viewModel.navigateTo(AppScreen.HOME) }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    IconButton(
+                        onClick = { viewModel.navigateTo(AppScreen.HOME) },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Home")
                     }
                 }
             )
@@ -56,11 +61,13 @@ fun AboutScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Mandatory Disclaimer Card
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Mandatory Legal Disclaimer Card
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
@@ -68,237 +75,236 @@ fun AboutScreen(
                 ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Outlined.Gavel,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Mandatory Legal Disclaimer",
+                            text = "Mandatory Civic Legal Disclaimer",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "This application provides general informational guidance strictly derived from official, verified Government of India legal sources. It does NOT constitute legal advice or create an attorney-client relationship. For specific legal issues, always consult a qualified legal professional.",
+                        text = "NyayaSahayak is an educational, civic information tool that translates official Indian statutes into plain language. It does NOT provide legal counsel, formal legal advice, or advocate representation. Always consult an enrolled advocate for formal legal proceedings.",
                         style = MaterialTheme.typography.bodyMedium,
-                        lineHeight = 20.sp
+                        lineHeight = 22.sp
                     )
                 }
             }
 
-            // Corpus Scope Card
+            // Backend Base URL Settings Card
             Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = CardDefaults.cardColors(containerColor = statusColors.surfaceContainerLowest),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Approved Official Corpus",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "1. The Constitution of India (As on 1st May 2026):\n" +
-                                "   • Preamble\n" +
-                                "   • Part III: Fundamental Rights (Articles 12-35)\n" +
-                                "   • Part IV: Directive Principles of State Policy (Articles 36-51)\n" +
-                                "   • Part IVA: Fundamental Duties (Article 51A)\n\n" +
-                                "2. Bharatiya Nagarik Suraksha Sanhita, 2023 (Act 46 of 2023):\n" +
-                                "   • Chapter V: Arrest of Persons (Sections 35, 47, 48, 57, 58)\n" +
-                                "   • Chapter XXXV: Bail & Bonds (Sections 478, 479, 480, 482)\n\n" +
-                                "3. Cross-reference mapping to previous Code of Criminal Procedure (CrPC, 1973).",
-                        style = MaterialTheme.typography.bodySmall,
-                        lineHeight = 18.sp
-                    )
-                }
-            }
-
-            // Privacy & Architecture Card
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Privacy & Local Device Security",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "• Zero User Accounts: No sign-in or tracking.\n" +
-                                "• On-Device History: All asked questions and answers are stored strictly on your local device.\n" +
-                                "• Source Grounding: Answers are rejected if unverified in official statutes.",
-                        style = MaterialTheme.typography.bodySmall,
-                        lineHeight = 18.sp
-                    )
-                }
-            }
-
-            // App Updates & Version Card
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Text(
+                            text = "Backend Server Connection",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (uiState.isBackendConnected) Color(0xFFE0F4F1) else Color(0xFFFFDAD5)
+                        ) {
                             Text(
-                                text = "App Version",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                text = if (uiState.isBackendConnected) "Connected" else "Unreachable",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (uiState.isBackendConnected) Color(0xFF006A63) else Color(0xFFBA1A1A)
                             )
-                            Text(
-                                text = "v${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        }
+                    }
+
+                    Text(
+                        text = "Configure the backend API URL. Debug mode allows cleartext HTTP (e.g. 10.0.2.2:8000 for emulator, LAN IP for phone). Release builds require HTTPS.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    OutlinedTextField(
+                        value = tempUrl,
+                        onValueChange = {
+                            tempUrl = it
+                            saveFeedback = null
+                        },
+                        label = { Text("Base URL") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    if (saveFeedback != null) {
+                        Text(
+                            text = saveFeedback!!,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (saveFeedback!!.contains("Valid") || saveFeedback!!.contains("Saved")) Color(0xFF006A63) else MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.checkHealth()
+                                saveFeedback = if (uiState.isBackendConnected) "Server is healthy!" else "Server ping sent. Rechecking status..."
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Ping Health")
                         }
 
                         Button(
                             onClick = {
-                                coroutineScope.launch {
-                                    isCheckingUpdate = true
-                                    updateInfo = GitHubUpdateChecker.checkForUpdate(BuildConfig.VERSION_NAME)
-                                    isCheckingUpdate = false
+                                val success = viewModel.updateBaseUrl(tempUrl)
+                                saveFeedback = if (success) {
+                                    "Saved & active: ${viewModel.uiState.value.baseUrl}"
+                                } else {
+                                    if (BuildConfig.REQUIRE_HTTPS) "Invalid URL. Release builds require HTTPS (https://...)."
+                                    else "Invalid URL. Must start with http:// or https://."
                                 }
                             },
-                            enabled = !isCheckingUpdate
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            if (isCheckingUpdate) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Checking...")
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Outlined.Refresh,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Check Updates")
-                            }
-                        }
-                    }
-
-                    if (updateInfo != null) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        val info = updateInfo!!
-                        if (info.hasUpdate) {
-                            Card(
-                                shape = RoundedCornerShape(10.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Text(
-                                        text = "🎉 New Version Available: ${info.latestVersion}",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = "Tap below to download and update the app. Your local chat history and settings are preserved.",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Button(
-                                        onClick = {
-                                            info.downloadUrl?.let { url ->
-                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                                context.startActivity(intent)
-                                            }
-                                        },
-                                        modifier = Modifier.align(Alignment.End)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Download,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Download & Install")
-                                    }
-                                }
-                            }
-                        } else {
-                            Text(
-                                text = "✅ You have the latest version installed.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            Icon(imageVector = Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Save URL")
                         }
                     }
                 }
             }
 
-            // Configurable Base URL Card
+            // Approved Government Sources Card
             Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = CardDefaults.cardColors(containerColor = statusColors.surfaceContainerLowest),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     Text(
-                        text = "Backend Server Configuration",
+                        text = "Approved Official Legal Sources",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Emulator default: http://10.0.2.2:8000\nPhysical device: Use host PC's Wi-Fi IP (e.g. http://192.168.1.5:8000)",
+                        text = "The application corpus is strictly populated from official Government of India publications. Third-party commentaries and non-official websites are prohibited by architectural design.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = tempUrl,
-                        onValueChange = { tempUrl = it },
-                        label = { Text("Base URL") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+
+                    OfficialSourceLink(
+                        name = "The Gazette of India (egazette.gov.in)",
+                        url = "https://egazette.gov.in"
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            viewModel.updateBaseUrl(tempUrl)
-                            saveMessage = "URL updated. Checking connection..."
-                        },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text("Save & Reconnect")
-                    }
-                    if (saveMessage != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = saveMessage!!,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    OfficialSourceLink(
+                        name = "India Code Digital Repository (indiacode.nic.in)",
+                        url = "https://www.indiacode.nic.in"
+                    )
+                    OfficialSourceLink(
+                        name = "Legislative Department, Ministry of Law and Justice",
+                        url = "https://legislative.gov.in"
+                    )
+                    OfficialSourceLink(
+                        name = "Supreme Court of India (e-SCR)",
+                        url = "https://main.sci.gov.in"
+                    )
                 }
             }
+
+            // Build and App Information Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = statusColors.surfaceContainerLowest),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Application Information",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Version: ${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE})",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = "Design System: Material 3 Civic / Stitch",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = "Zero Telemetry: No analytics SDKs or tracking.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun OfficialSourceLink(name: String, url: String) {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                context.startActivity(intent)
+            }
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.Default.OpenInNew,
+            contentDescription = "Open $name in browser",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(16.dp)
+        )
     }
 }

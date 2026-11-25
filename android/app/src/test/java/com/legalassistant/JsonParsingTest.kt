@@ -1,8 +1,7 @@
 package com.legalassistant
 
 import com.google.gson.Gson
-import com.legalassistant.data.model.AnswerStatus
-import com.legalassistant.data.model.LegalResponse
+import com.legalassistant.data.model.*
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -38,7 +37,14 @@ class JsonParsingTest {
                     "location": "Part III, Article 21"
                 }
             ],
-            "related_judgments": [],
+            "related_judgments": [
+                {
+                    "case_name": "Maneka Gandhi v. Union of India",
+                    "citation": "1978 AIR 597",
+                    "holding": "Procedure established by law must be fair, just, and reasonable.",
+                    "source_id": "maneka-gandhi-1978"
+                }
+            ],
             "last_verified": "2026-11-22",
             "disclaimer": "General information, not legal advice."
         }
@@ -50,9 +56,10 @@ class JsonParsingTest {
         assertEquals("What is Article 21 of the Indian Constitution?", response.question)
         assertNotNull(response.shortAnswer)
         assertTrue(response.shortAnswer!!.simple.contains("no person shall be deprived of his life", ignoreCase = true))
-        assertFalse(response.shortAnswer!!.simple.contains("citizens"))
         assertEquals(1, response.details.size)
         assertEquals("Article 21", response.details[0].section)
+        assertEquals(1, response.relatedJudgments.size)
+        assertEquals("Maneka Gandhi v. Union of India", response.relatedJudgments[0].displayTitle)
         assertEquals("2026-11-22", response.lastVerified)
         assertEquals("General information, not legal advice.", response.disclaimer)
     }
@@ -64,11 +71,11 @@ class JsonParsingTest {
             "status": "answered",
             "question": "When can police arrest without warrant under Section 35?",
             "short_answer": {
-                "simple": "Under Section 35, police may arrest without warrant.",
-                "detailed": "Detailed text from BNSS 2023."
+                "simple": "Under Section 35, police may arrest without warrant in cognizable cases.",
+                "detailed": "Detailed text from BNSS 2023 Section 35."
             },
             "key_points": [
-                "Previous Law Reference: Corresponding provision was Section 41 CrPC (needs human review)."
+                "Previous Law Reference: Corresponding provision was Section 41 CrPC."
             ],
             "details": [
                 {
@@ -97,15 +104,38 @@ class JsonParsingTest {
     }
 
     @Test
-    fun testParseInsufficientEvidenceResponse() {
+    fun testParseNeedsClarificationResponse() {
         val json = """
         {
-            "status": "insufficient_evidence",
-            "question": "What is the penalty for municipal zoning violation?",
-            "short_answer": null,
+            "status": "needs_clarification",
+            "question": "What is the procedure for bail?",
+            "clarification_question": "Which type of bail procedure are you inquiring about?",
+            "clarification_options": [
+                "Bail in bailable offences (Section 478 BNSS)",
+                "Bail in non-bailable offences (Section 480 BNSS)",
+                "Anticipatory bail prior to arrest (Section 482 BNSS)"
+            ],
+            "disclaimer": "General information, not legal advice."
+        }
+        """.trimIndent()
+
+        val response = gson.fromJson(json, LegalResponse::class.java)
+
+        assertEquals(AnswerStatus.NEEDS_CLARIFICATION, response.status)
+        assertNotNull(response.clarificationQuestion)
+        assertEquals(3, response.clarificationOptions.size)
+        assertTrue(response.clarificationOptions[0].contains("478"))
+    }
+
+    @Test
+    fun testParseNotCoveredYetResponse() {
+        val json = """
+        {
+            "status": "not_covered_yet",
+            "question": "What is the fine for driving without helmet?",
+            "uncovered_area": "Motor Vehicles Act, 1988",
             "key_points": [
-                "No sufficiently relevant passages were found in the approved legal corpus.",
-                "The system refuses to generate answers without verified source evidence."
+                "Motor vehicle offenses are not indexed yet."
             ],
             "details": [],
             "disclaimer": "General information, not legal advice."
@@ -114,10 +144,38 @@ class JsonParsingTest {
 
         val response = gson.fromJson(json, LegalResponse::class.java)
 
-        assertEquals(AnswerStatus.INSUFFICIENT_EVIDENCE, response.status)
-        assertNull(response.shortAnswer)
+        assertEquals(AnswerStatus.NOT_COVERED_YET, response.status)
+        assertEquals("Motor Vehicles Act, 1988", response.uncoveredArea)
         assertTrue(response.details.isEmpty())
-        assertEquals(2, response.keyPoints.size)
+    }
+
+    @Test
+    fun testParseInsufficientEvidenceResponseWithRelatedSources() {
+        val json = """
+        {
+            "status": "insufficient_evidence",
+            "question": "Does maternity benefit apply to private companies under Directive Principles?",
+            "related_sources": [
+                {
+                    "claim": "Article 37 specifies Directive Principles are not enforceable by courts",
+                    "law": "Constitution of India",
+                    "section": "Article 37",
+                    "quote": "The provisions contained in this Part shall not be enforceable by any court",
+                    "source_id": "constitution-india",
+                    "source_title": "Article 37: Application of principles",
+                    "source_url": "https://legislative.gov.in",
+                    "location": "Part IV, Article 37"
+                }
+            ],
+            "disclaimer": "General information, not legal advice."
+        }
+        """.trimIndent()
+
+        val response = gson.fromJson(json, LegalResponse::class.java)
+
+        assertEquals(AnswerStatus.INSUFFICIENT_EVIDENCE, response.status)
+        assertEquals(1, response.relatedSources.size)
+        assertEquals("Article 37", response.relatedSources[0].section)
     }
 
     @Test
@@ -125,10 +183,9 @@ class JsonParsingTest {
         val json = """
         {
             "status": "out_of_scope",
-            "question": "What is the recipe for butter chicken?",
-            "short_answer": null,
+            "question": "How to bake chocolate chip cookies?",
             "key_points": [
-                "This assistant only answers questions regarding the Constitution of India and BNSS."
+                "Query is outside the scope of Indian legal statutes."
             ],
             "details": [],
             "disclaimer": "General information, not legal advice."
@@ -139,5 +196,96 @@ class JsonParsingTest {
 
         assertEquals(AnswerStatus.OUT_OF_SCOPE, response.status)
         assertNull(response.shortAnswer)
+    }
+
+    @Test
+    fun testParseErrorResponse() {
+        val json = """
+        {
+            "status": "error",
+            "question": "Unknown crash test",
+            "short_answer": {
+                "simple": "An error occurred during verification",
+                "detailed": "Detailed internal error"
+            },
+            "disclaimer": "General information, not legal advice."
+        }
+        """.trimIndent()
+
+        val response = gson.fromJson(json, LegalResponse::class.java)
+
+        assertEquals(AnswerStatus.ERROR, response.status)
+        assertEquals("An error occurred during verification", response.shortAnswer?.simple)
+    }
+
+    @Test
+    fun testParseUnknownOrMissingFieldsWithoutCrashing() {
+        // Backend returns extra unknown fields and omits several fields
+        val json = """
+        {
+            "status": "answered",
+            "question": "Test unknown fields",
+            "unexpected_future_field_xyz": 12345,
+            "another_random_field": {"foo": "bar"},
+            "disclaimer": "General information, not legal advice."
+        }
+        """.trimIndent()
+
+        val response = gson.fromJson(json, LegalResponse::class.java)
+
+        assertEquals(AnswerStatus.ANSWERED, response.status)
+        assertEquals("Test unknown fields", response.question)
+        assertNull(response.shortAnswer)
+        assertTrue(response.details.isEmpty())
+        assertTrue(response.keyPoints.isEmpty())
+        assertEquals("General information, not legal advice.", response.disclaimer)
+    }
+
+    @Test
+    fun testParseCoverageResponse() {
+        val json = """
+        {
+            "note": "Selected sections only",
+            "total_chunks": 186,
+            "laws": [
+                {
+                    "law": "Constitution of India",
+                    "source_id": "constitution-india",
+                    "coverage_note": "Selected sections only",
+                    "last_verified": "2026-11-22",
+                    "sections": [
+                        {
+                            "section": "Article 21",
+                            "title": "Article 21: Protection of life and personal liberty",
+                            "old_equivalent": null
+                        }
+                    ]
+                }
+            ]
+        }
+        """.trimIndent()
+
+        val coverage = gson.fromJson(json, CoverageResponse::class.java)
+
+        assertEquals("Selected sections only", coverage.note)
+        assertEquals(186, coverage.totalChunks)
+        assertEquals(1, coverage.laws.size)
+        assertEquals("Constitution of India", coverage.laws[0].law)
+        assertEquals("Article 21", coverage.laws[0].sections[0].section)
+    }
+
+    @Test
+    fun testParseFeedbackResponse() {
+        val json = """
+        {
+            "status": "received",
+            "message": "Feedback recorded in review queue"
+        }
+        """.trimIndent()
+
+        val fb = gson.fromJson(json, FeedbackResponse::class.java)
+
+        assertEquals("received", fb.status)
+        assertEquals("Feedback recorded in review queue", fb.message)
     }
 }

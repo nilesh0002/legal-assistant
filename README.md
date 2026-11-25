@@ -158,10 +158,25 @@ These choices were made to keep moving. Flag if you disagree:
 
 1. **Official Sources Only**: All non-official and third-party sources (`indian-kanoon`, `prs-india`, `livelaw`, `bar-and-bench`) and live web retrieval tools (`web_search.py`, `WebLegalRetriever`) have been strictly purged from `sources.yaml` and backend code.
 2. **Network Isolation**: The `/ask` retrieval, thresholding, and validation pipeline runs 100% offline without network calls. Only external LLM calls (e.g. Gemini) are allowed network access.
-3. **Deterministic Cross-Feature Reranking**: Replaced external heavy ONNX model downloads with an offline cross-encoder reranker combining vector similarity, BM25 signals, title precision/recall (F1), exact phrase matching, and multi-query agreement.
-4. **Calibrated Evidence Gating**: Replaced brittle vector cutoffs with a two-gate calibrated threshold: high semantic vector score (>= 0.67) or solid semantic score (>= 0.64) combined with multi-query agreement (>= 2) and high rerank score (>= 0.67). Uncovered legal topics reliably return `insufficient_evidence`.
-5. **Conversational Memory**: Follow-up questions resolve conversational references (last 2 turns) strictly in-memory per request body with no server-side user data retention.
-6. **Statutory Coverage**: BNSS 2023 corpus expanded to 46 key sections covering arrest procedure, rights of arrested persons, summons/warrants, search/seizure, remand custody limits, and bail.
+3. **True Cross-Encoder Reranking**: Replaced hardcoded heuristic scoring with a true ONNX Cross-Encoder (`fastembed.rerank.TextCrossEncoder`) behind a `BaseReranker` interface, with calibrated multi-signal fallback.
+4. **Calibrated Evidence Gating**: Replaced brittle vector cutoffs with a multi-signal calibrated threshold (semantic similarity, query agreement, and cross-encoder score). Uncovered legal topics reliably return `insufficient_evidence` or `not_covered_yet`.
+5. **Private-Person / Part IV Guard**: When queries concern private employers, companies, or individuals, Part IV Directive Principles of State Policy are guarded against presentation as binding answers. Instead, the system returns `insufficient_evidence` citing Article 37 of the Constitution directly from the corpus.
+6. **Coverage Honesty**: The system never substitutes nearby sections. If a question mentions an unindexed Article or Section number, the system returns `not_covered_yet` or `insufficient_evidence`.
+7. **Statutory Coverage**: Active official corpus comprises **186 chunks** across 5 official statutes:
+   - The Constitution of India (Preamble, Parts III, IV, IVA: 52 chunks)
+   - Bharatiya Nagarik Suraksha Sanhita, 2023 (46 sections)
+   - Bharatiya Nyaya Sanhita, 2023 (44 sections)
+   - The Consumer Protection Act, 2019 (27 sections)
+   - The Right to Information Act, 2005 (17 sections)
+
+## Known Limitations & Missing Files
+
+1. **Selected Sections Only**: NyayaSahayak currently indexes selected core sections of the above 5 statutes, not the entire Indian legal corpus.
+2. **Missing Files (Manual Download Required)**:
+   - **Motor Vehicles Act, 1988**: Automated download from `https://www.indiacode.nic.in/bitstream/123456789/1798/1/A1988-59.pdf` timed out. To index MVA 1988, manually download `A1988-59.pdf` and place it at `backend/data/raw/mva_1988.pdf`.
+   - **Information Technology Act, 2000**: Automated download from `https://www.indiacode.nic.in/bitstream/123456789/1999/3/A2000-21.pdf` redirected / timed out. Manually download `A2000-21.pdf` and place it at `backend/data/raw/it_act_2000.pdf`.
+   - **Landmark Supreme Court Judgments**: The folder `backend/data/raw/judgments/` is currently empty. The 7 landmark judgments (*Kesavananda Bharati*, *Maneka Gandhi*, *D.K. Basu*, *Arnesh Kumar*, *K.S. Puttaswamy*, *Vishaka*, *Navtej Singh Johar*) can be downloaded from the official Supreme Court portal (`https://main.sci.gov.in/`) and saved into `backend/data/raw/judgments/<name>.pdf`.
+3. **No Legal Advice**: The assistant is designed strictly for informational and civic awareness purposes, not legal advice or court representation.
 
 ## Milestones
 
@@ -191,3 +206,18 @@ These choices were made to keep moving. Flag if you disagree:
 6. **Disclaimer on every answer** — "General information, not legal advice."
 7. **Swappable components** — LLM, embeddings, and vector DB are behind
    abstract interfaces.
+
+## Android App & Design Implementation Assumptions
+
+- **Design System:** Implemented according to the Stitch civic design specification (`nyayasahayak_design_system.md`), utilizing Material 3 tonal surface layering, warm off-white grounds (`#F7F6F2`), deep civic navy typography (`#1B2A49`), and amber accents (`#E0A030`).
+- **Typography:** System Sans-Serif (Noto Sans equivalent) for all UI controls and plain-language summaries; dedicated `FontFamily.Serif` (Noto Serif equivalent) for verbatim statutory text quotes. Supports 200% dynamic font scaling without layout clipping.
+- **Touch Targets:** Minimum 48dp height enforced on all interactive buttons, chips, filter tabs, list items, and icon controls for accessibility.
+- **Privacy & Storage:** Purely on-device history via local SharedPreferences. Zero tracking, zero user accounts, zero analytics SDKs.
+- **Security & Network:** Base URL configurable via Settings. Debug variant permits cleartext HTTP (`10.0.2.2:8000` or LAN IPs) via `src/debug/res/xml/network_security_config.xml`. Release builds strictly require HTTPS. Keystores and passwords are git-ignored.
+
+## Web App Implementation & Verification
+
+- **Architecture:** Plain HTML, CSS, and ES modules (`web/index.html`, `web/css/styles.css`, `web/js/{config,storage,api,render,app}.js`) with zero external CDNs, zero tracking/analytics, and system font fallbacks (`Noto Sans` / `Noto Serif` / `Source Code Pro`).
+- **Security:** All backend strings are rendered strictly via `textContent` (no `innerHTML` with untrusted data); Content-Security-Policy `<meta>` tag enforced (`script-src 'self'`, `style-src 'self'`); `rel="noopener noreferrer"` on external source links; 1,000-character query cap enforced.
+- **Accessibility & Responsive Design:** Light/dark themes (`prefers-color-scheme` + `localStorage` toggle), 44px minimum tap targets, skip link, ARIA live region, print stylesheet, and responsive breakpoints at `390px`, `768px`, and `1280px`.
+- **Guide:** See [WEB_GUIDE.md](WEB_GUIDE.md) for local setup, API URL configuration, Vercel deployment, and production CORS settings.
